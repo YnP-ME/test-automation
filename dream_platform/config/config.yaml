@@ -1,0 +1,12 @@
+default: production
+environments:
+  local: ""
+  staging: ""
+  production: "https://dp.dev.qone-dev.com/login"
+users:
+  admin:
+    username: "kirill_zlotnikov+admin@quantumone.ae"
+    password: "Abc123!@#"
+  user:
+    username: "kirill_zlotnikov+employee@quantumone.ae"
+    password: "123456"
