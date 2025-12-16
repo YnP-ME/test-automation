@@ -2,7 +2,7 @@ default: production
 environments:
   local: ""
   staging: ""
-  production: "https://dp.dev.qone-dev.com/login"
+  production: "https://dp.dev.qone-dev.com/"
 users:
   admin:
     username: "kirill_zlotnikov+admin@quantumone.ae"
