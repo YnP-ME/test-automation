@@ -47,7 +47,6 @@ def test_logout(page, base_url):
     login.click_logout()
     time.sleep(2)
 
-
     # Wait for the modal to appear
     expect(login.logout_modal_title).to_be_visible()
 
@@ -60,7 +59,54 @@ def test_logout(page, base_url):
     expect(login.password_input, "Password input is not visible").to_be_visible()
     expect(login.login_button, "Login button is not visible").to_be_visible()
 
+
 @pytest.mark.order(4)
+def test_invalid_login_wrong_username(page, base_url, config):
+    login = LoginPage(page, base_url)
+    login.open_login()
+    time.sleep(2)
+
+    creds = config["users"]["user"]
+    login.enter_username("wrong_username@gmail.com")
+    login.enter_password(creds["password"])
+    login.click_login()
+
+    time.sleep(2)
+
+    expect(login.invalid_login_error).to_be_visible()
+    expect(login.invalid_login_error).to_have_text("Incorrect login or password")
+
+
+@pytest.mark.order(5)
+def test_invalid_login_wrong_password(page, base_url, config):
+    login = LoginPage(page, base_url)
+    login.open_login()
+    time.sleep(2)
+
+    creds = config["users"]["user"]
+    login.enter_username(creds["username"])
+    login.enter_password("wrong_password")
+    login.click_login()
+
+    time.sleep(2)
+    expect(login.invalid_login_error).to_be_visible()
+    expect(login.invalid_login_error).to_have_text("Incorrect login or password")
+
+
+@pytest.mark.order(6)
+def test_invalid_login_wrong_username_and_password(page, base_url):
+    login = LoginPage(page, base_url)
+    login.open_login()
+
+    login.enter_username("wrong_user")
+    login.enter_password("wrong_password")
+    login.click_login()
+
+    time.sleep(2)
+    expect(login.invalid_login_error).to_be_visible()
+    expect(login.invalid_login_error).to_have_text("Incorrect login or password")
+
+@pytest.mark.order(7)
 def test_user_valid_login(page, base_url, config):
     login = LoginPage(page, base_url)
     login.open_login()
@@ -73,7 +119,30 @@ def test_user_valid_login(page, base_url, config):
 
     time.sleep(2)
 
-    expect(login.exit_button, "Exit button not visible after admin login").to_be_visible()
+    expect(login.exit_button, "Exit button not visible after login").to_be_visible()
+    expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
+    expect(login.performance_review_panel_button, "Performance Review panel link not visible").to_be_visible()
+    expect(login.user_profile_link, "User profile link not visible").to_be_visible()
+
+
+# Logout
+@pytest.mark.order(8)
+def test_cancel_logout(page, base_url):
+    login = LoginPage(page, base_url)
+
+    # Click logout
+    login.click_logout()
+    time.sleep(2)
+
+    # Wait for the modal to appear
+    expect(login.logout_modal_title).to_be_visible()
+
+    login.cancel_logout_button.click()
+
+    time.sleep(2)
+
+    # Assert returned to login page
+    expect(login.exit_button, "Exit button not visible after login").to_be_visible()
     expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
     expect(login.performance_review_panel_button, "Performance Review panel link not visible").to_be_visible()
     expect(login.user_profile_link, "User profile link not visible").to_be_visible()

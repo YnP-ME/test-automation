@@ -21,6 +21,8 @@ class LoginPage(BasePage):
         self.logout_modal_title = page.get_by_text("Are you sure you want to logout?")
         self.cancel_button = page.get_by_role("button", name="Cancel")
         self.confirm_logout_button = page.get_by_role("button", name="Logout", exact=True)
+        self.cancel_logout_button = page.get_by_role("button", name="Cancel", exact=True)
+        self.invalid_login_error = page.locator("p:text('Incorrect login or password')")
 
     def open_login(self):
         return self.goto(self.url)
