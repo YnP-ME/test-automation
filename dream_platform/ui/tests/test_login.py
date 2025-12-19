@@ -1,36 +1,35 @@
 import time
-
+import pytest
 from playwright.sync_api import expect
 from dream_platform.ui.pages.login_page import LoginPage
-import pytest
+
 
 @pytest.mark.order(1)
-def test_login_page_elements_before_login(page, base_url):
-    login = LoginPage(page,base_url)
+def test_login_page_elements_before_login(browser_page, base_url):
+    """Check that all login page elements are visible before login."""
+    login = LoginPage(browser_page, base_url)
     login.open_login()
 
-    time.sleep(2)
-
+    # Assertions for page elements visibility
     expect(login.login_page_title, "Login page title is not visible").to_be_visible()
     expect(login.login_header_logo, "Company name is not visible on login page").to_be_visible()
     expect(login.username_input, "Username input is not visible").to_be_visible()
     expect(login.password_input, "Password input is not visible").to_be_visible()
     expect(login.login_button, "Login button is not visible").to_be_visible()
 
-# Admin Successful login
-@pytest.mark.order(2)
-def test_admin_valid_login(page, base_url, config):
-    login = LoginPage(page, base_url)
-    login.open_login()
 
-    time.sleep(2)
+@pytest.mark.order(2)
+def test_admin_valid_login(browser_page, base_url, config):
+    """Admin can log in successfully and see expected elements."""
+    login = LoginPage(browser_page, base_url)
+    login.open_login()
 
     creds = config["users"]["admin"]
     login.enter_username(creds["username"])
     login.enter_password(creds["password"])
     login.click_login()
-    time.sleep(3)
 
+    # Assertions for admin login success
     expect(login.exit_button, "Exit button not visible after admin login").to_be_visible()
     expect(login.admin_panel_button, "Admin panel link not visible").to_be_visible()
     expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
@@ -38,110 +37,102 @@ def test_admin_valid_login(page, base_url, config):
     expect(login.admin_profile_link, "Admin profile link not visible").to_be_visible()
 
 
-# Logout
 @pytest.mark.order(3)
-def test_logout(page, base_url):
-    login = LoginPage(page, base_url)
+def test_logout(browser_page, base_url):
+    """Test logout functionality and returning to login page."""
+    login = LoginPage(browser_page, base_url)
 
     # Click logout
     login.click_logout()
-    time.sleep(2)
+    time.sleep(2)  # Could replace with proper wait
 
-    # Wait for the modal to appear
+    # Wait for logout modal
     expect(login.logout_modal_title).to_be_visible()
+    login.confirm_logout()
 
-    login.confirm_logout_button.click()
-
-    time.sleep(2)
-
-    # Assert returned to login page
+    # Assertions for returned login page
     expect(login.username_input, "Username input is not visible").to_be_visible()
     expect(login.password_input, "Password input is not visible").to_be_visible()
     expect(login.login_button, "Login button is not visible").to_be_visible()
 
 
 @pytest.mark.order(4)
-def test_invalid_login_wrong_username(page, base_url, config):
-    login = LoginPage(page, base_url)
+def test_invalid_login_wrong_username(browser_page, base_url, config):
+    """Login should fail with wrong username."""
+    login = LoginPage(browser_page, base_url)
     login.open_login()
-    time.sleep(2)
 
     creds = config["users"]["user"]
     login.enter_username("wrong_username@gmail.com")
     login.enter_password(creds["password"])
     login.click_login()
 
-    time.sleep(2)
-
+    # Assertions for invalid login error
     expect(login.invalid_login_error).to_be_visible()
     expect(login.invalid_login_error).to_have_text("Incorrect login or password")
 
 
 @pytest.mark.order(5)
-def test_invalid_login_wrong_password(page, base_url, config):
-    login = LoginPage(page, base_url)
+def test_invalid_login_wrong_password(browser_page, base_url, config):
+    """Login should fail with wrong password."""
+    login = LoginPage(browser_page, base_url)
     login.open_login()
-    time.sleep(2)
+    time.sleep(2)  # Could replace with proper wait
 
     creds = config["users"]["user"]
     login.enter_username(creds["username"])
     login.enter_password("wrong_password")
     login.click_login()
 
-    time.sleep(2)
+    # Assertions for invalid login error
     expect(login.invalid_login_error).to_be_visible()
     expect(login.invalid_login_error).to_have_text("Incorrect login or password")
 
 
 @pytest.mark.order(6)
-def test_invalid_login_wrong_username_and_password(page, base_url):
-    login = LoginPage(page, base_url)
+def test_invalid_login_wrong_username_and_password(browser_page, base_url):
+    """Login should fail with wrong username and password."""
+    login = LoginPage(browser_page, base_url)
     login.open_login()
-
     login.enter_username("wrong_user")
     login.enter_password("wrong_password")
     login.click_login()
 
-    time.sleep(2)
+    # Assertions for invalid login error
     expect(login.invalid_login_error).to_be_visible()
     expect(login.invalid_login_error).to_have_text("Incorrect login or password")
 
+
 @pytest.mark.order(7)
-def test_user_valid_login(page, base_url, config):
-    login = LoginPage(page, base_url)
+def test_user_valid_login(browser_page, base_url, config):
+    """User can log in successfully and see expected elements."""
+    login = LoginPage(browser_page, base_url)
     login.open_login()
-    time.sleep(2)
 
     creds = config["users"]["user"]
     login.enter_username(creds["username"])
     login.enter_password(creds["password"])
     login.click_login()
 
-    time.sleep(2)
-
+    # Assertions for user login success
     expect(login.exit_button, "Exit button not visible after login").to_be_visible()
     expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
     expect(login.performance_review_panel_button, "Performance Review panel link not visible").to_be_visible()
     expect(login.user_profile_link, "User profile link not visible").to_be_visible()
 
 
-# Logout
 @pytest.mark.order(8)
-def test_cancel_logout(page, base_url):
-    login = LoginPage(page, base_url)
+def test_cancel_logout(browser_page, base_url):
+    """Test canceling logout keeps user on current page."""
+    login = LoginPage(browser_page, base_url)
 
     # Click logout
     login.click_logout()
-    time.sleep(2)
-
-    # Wait for the modal to appear
     expect(login.logout_modal_title).to_be_visible()
 
     login.cancel_logout_button.click()
 
-    time.sleep(2)
-
-    # Assert returned to login page
+    # Assertions for staying on the page
     expect(login.exit_button, "Exit button not visible after login").to_be_visible()
     expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
     expect(login.performance_review_panel_button, "Performance Review panel link not visible").to_be_visible()

@@ -9,4 +9,5 @@ users:
     password: "Abc123!@#"
   user:
     username: "kirill_zlotnikov+employee@quantumone.ae"
-    password: "123456"
+    password: "NewPass1234!"
+    new_pass: "NewPass123!"

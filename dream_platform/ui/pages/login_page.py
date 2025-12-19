@@ -1,12 +1,14 @@
 from dream_platform.ui.pages.base_page import BasePage
 
 class LoginPage(BasePage):
+    """Page object model for the login page."""
+
     def __init__(self, page, base_url):
         super().__init__(page)
         self.base_url = base_url
         self.url = f"{base_url}login"
 
-        # Login page elements
+        # ---------- Login page elements ----------
         self.login_page_title = page.locator(".font-family-title")
         self.login_header_logo = page.locator(".container-wrapper")
         self.username_input = page.locator("input[name='email']")
@@ -24,20 +26,27 @@ class LoginPage(BasePage):
         self.cancel_logout_button = page.get_by_role("button", name="Cancel", exact=True)
         self.invalid_login_error = page.locator("p:text('Incorrect login or password')")
 
+    # ---------- Page actions ----------
     def open_login(self):
+        """Navigate to the login page."""
         return self.goto(self.url)
 
-        # Enter username
     def enter_username(self, username):
+        """Fill in the username field."""
         self.username_input.fill(username)
 
-        # Enter password
     def enter_password(self, password):
+        """Fill in the password field."""
         self.password_input.fill(password)
 
-        # Click the login button
     def click_login(self):
+        """Click the login button."""
         self.login_button.click()
 
     def click_logout(self):
+        """Click the exit button to start logout."""
         self.exit_button.click()
+
+    def confirm_logout(self):
+        """Confirm logout in the modal."""
+        self.confirm_logout_button.click()
