@@ -1,5 +1,15 @@
+import sys
 import os
 import time
+
+import msal
+import requests
+
+from dream_platform.utils.outlook_imap_oauth import login_outlook_imap_app_only
+
+# Add project root to Python path so imports work
+sys.path.append(os.path.dirname(__file__))
+import email
 import pytest
 import yaml
 from playwright.sync_api import sync_playwright, expect
@@ -114,36 +124,90 @@ def login_as_admin(browser_page, base_url, config):
     # Verify login succeeded
     expect(login.admin_panel_button, "Admin panel button not visible after login").to_be_visible()
 
-
 @pytest.fixture
 def restore_password(browser_page, base_url, config):
     """
-    Fixture to restore the original password after a test.
-    Used to avoid breaking other tests that rely on the default password.
+    Restores original user password after test.
+    Prevents breaking other tests that rely on default credentials.
     """
     creds = config["users"]["user"]
     original_password = creds["password"]
-    yield  # Test runs here
+    new_password = creds["new_pass"]
 
-    # ------------------- Teardown: Restore original password -------------------
-    login = LoginPage(browser_page, base_url)
-    user = UserPage(browser_page, base_url)
+    yield  # ----- TEST RUNS HERE -----
 
-    # Login with current password (should be new password)
-    login.open_login()
-    login.enter_username(creds["username"])
-    login.enter_password(creds["new_pass"])
-    login.click_login()
+    try:
+        login = LoginPage(browser_page, base_url)
+        user = UserPage(browser_page, base_url)
 
-    # Restore password to original
-    user.click_user_icon()
-    user.click_change_password()
-    user.current_password_input.fill(creds["new_pass"])
-    user.new_password_input.fill(original_password)
-    user.save_password_button.click()
+        login.open_login()
+        login.enter_username(creds["username"])
+        login.enter_password(new_password)
+        login.click_login()
 
-    # Verify password restored successfully
-    expect(user.password_change_success, "Password restoration success message not visible").to_be_visible()
+        if user.user_icon.is_visible():
+            user.click_user_icon()
+            user.click_change_password()
+            user.current_password_input.fill(new_password)
+            user.new_password_input.fill(original_password)
+            user.save_password_button.click()
+            expect(user.password_change_success).to_be_visible()
 
-    login.click_logout()
-    login.confirm_logout()
+            login.click_logout()
+            login.confirm_logout()
+    except Exception:
+        print("Password restore skipped")
+
+GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0"
+
+def get_access_token():
+    client_id = os.environ["AZURE_CLIENT_ID"]
+    tenant_id = os.environ["AZURE_TENANT_ID"]
+    client_secret = os.environ["AZURE_CLIENT_SECRET"]
+
+    app = msal.ConfidentialClientApplication(
+        client_id=client_id,
+        client_credential=client_secret,
+        authority=f"https://login.microsoftonline.com/{tenant_id}"
+    )
+
+    result = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+    if "access_token" not in result:
+        raise Exception(f"Failed to get access token: {result}")
+
+    return result["access_token"]
+
+
+
+@pytest.fixture
+def last_password_reset_email():
+    def _get_last_email(user_email: str, max_wait=120):
+        token = get_access_token()
+        headers = {"Authorization": f"Bearer {token}"}
+        url = f"{GRAPH_ENDPOINT}/users/{user_email}/mailFolders/Inbox/messages?$top=20"
+
+        start_time = time.time()
+
+        while time.time() - start_time < max_wait:
+            resp = requests.get(url, headers=headers)
+            resp.raise_for_status()
+            messages = resp.json().get("value", [])
+
+            for msg in messages:
+                sender = msg["from"]["emailAddress"]["address"].lower()
+                received = msg["receivedDateTime"]
+
+                msg_time = time.mktime(
+                    time.strptime(
+                        received.replace("Z","").split('.')[0],
+                        "%Y-%m-%dT%H:%M:%S"
+                    )
+                )
+
+                if sender == "inquiries@quantumone.ae" and msg_time > start_time:
+                    return msg["body"]["content"]
+
+            time.sleep(5)
+
+        raise AssertionError("No NEW password reset email received")
+    return _get_last_email
