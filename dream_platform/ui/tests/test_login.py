@@ -16,6 +16,7 @@ def test_login_page_elements_before_login(browser_page, base_url):
     expect(login.username_input, "Username input is not visible").to_be_visible()
     expect(login.password_input, "Password input is not visible").to_be_visible()
     expect(login.login_button, "Login button is not visible").to_be_visible()
+    expect(login.forgot_password_link,"Forgot password button is not visible").to_be_visible()
 
 
 @pytest.mark.order(2)
