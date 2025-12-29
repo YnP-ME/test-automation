@@ -62,7 +62,7 @@ jobs:
       # 6. Upload test report
       - name: Upload test report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-report
           path: pytest-report.xml  # generate with pytest --junitxml=pytest-report.xml
