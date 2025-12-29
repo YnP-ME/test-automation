@@ -19,12 +19,18 @@ class LoginPage(BasePage):
         self.performance_review_panel_button = page.get_by_text("My Performance Review")
         self.exit_button = page.get_by_role("button", name="Exit")
         self.admin_profile_link = page.get_by_role("link", name="Test Admin", exact=True)
-        self.user_profile_link = page.get_by_role("link", name="Test Employee")
+        self.user_profile_link = page.get_by_role("link", name="Employee")
         self.logout_modal_title = page.get_by_text("Are you sure you want to logout?")
         self.cancel_button = page.get_by_role("button", name="Cancel")
         self.confirm_logout_button = page.get_by_role("button", name="Logout", exact=True)
         self.cancel_logout_button = page.get_by_role("button", name="Cancel", exact=True)
         self.invalid_login_error = page.locator("p:text('Incorrect login or password')")
+
+        # Forgot password link
+        self.forgot_password_link = page.get_by_role("link",name="Forgotten your password?")
+        self.email_input = page.locator("input[name='email']")  # adjust selector
+        self.restore_button = page.get_by_role("button", name="Send Reset Link")  # adjust selector
+        self.reset_success_message = page.locator("div.reset-success")  # adjust selector
 
     # ---------- Page actions ----------
     def open_login(self):
@@ -50,3 +56,7 @@ class LoginPage(BasePage):
     def confirm_logout(self):
         """Confirm logout in the modal."""
         self.confirm_logout_button.click()
+
+    def click_forgot_password(self):
+        self.forgot_password_link.click()
+

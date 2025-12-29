@@ -8,6 +8,7 @@ users:
     username: "kirill_zlotnikov+admin@quantumone.ae"
     password: "Abc123!@#"
   user:
-    username: "kirill_zlotnikov+employee@quantumone.ae"
+    username: "test_user@quantumone.ae"
     password: "NewPass1234!"
     new_pass: "NewPass123!"
+    password_outlook: "T!650876172432up"

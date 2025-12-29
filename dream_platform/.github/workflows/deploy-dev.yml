@@ -1,0 +1,81 @@
+name: Deploy DreamProject API to Dev
+
+on:
+  push:
+    branches:
+      - 'dev-*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+
+env:
+  SSH_PORT: 22
+
+jobs:
+  deploy:
+    name: Deploy DreamProject API to Dev
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SERVER_IP: ${{ secrets.DEV_SERVER_IP }}
+      TARGET_DIR: ${{ secrets.TARGET_DIR }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p $SSH_PORT -H $SERVER_IP >> ~/.ssh/known_hosts
+
+      - name: Create deployment directory
+        run: |
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=yes $SSH_USER@$SERVER_IP \
+          "mkdir -p $TARGET_DIR/dream-project"
+
+      - name: Backup .env files on server
+        run: |
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=yes $SSH_USER@$SERVER_IP \
+          "cd $TARGET_DIR/dream-project && \
+           if [ -f .env ]; then cp .env .env.backup; fi"
+
+      - name: Upload files via rsync
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/id_rsa -p $SSH_PORT" \
+            --exclude='.git' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.DS_Store' \
+            --exclude='.pytest_cache' \
+            --exclude='.venv' \
+            --exclude='venv' \
+            --exclude='.env' \
+            --exclude='.env.local' \
+            --exclude='*.log' \
+            ./ $SSH_USER@$SERVER_IP:$TARGET_DIR/dream-project/
+
+      - name: Deploy with Docker
+        run: |
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=yes $SSH_USER@$SERVER_IP \
+          "cd $TARGET_DIR/dream-project && \
+           docker-compose -f docker-compose.dev.yml down --remove-orphans || true && \
+           docker rm -f dream-project-dev || true && \
+           docker rmi dream-project_dream-project-dev || true && \
+           docker-compose -f docker-compose.dev.yml build --no-cache && \
+           docker-compose -f docker-compose.dev.yml up -d"
+
+      - name: Wait for API to become available
+        run: |
+          for i in {1..12}; do
+            if curl -sf "ht
