@@ -1,11 +1,11 @@
-name: Deploy DreamProject to Dev
+name: Python AutoTest on Azure
 
 on:
   push:
     branches:
       - main
-      - 'dev-*'
-  workflow_dispatch:
+      - 'dev-*'        # runs on any branch starting with "dev-"
+  workflow_dispatch:   # allows manual trigger
     inputs:
       environment:
         description: 'Environment to test'
@@ -17,30 +17,36 @@ on:
   schedule:
     - cron: '0 0 * * *'  # daily at midnight UTC
 
+# Jobs
 jobs:
   autotest:
-    name: Run Python Tests on Azure
+    name: Run Python Tests
     runs-on: ubuntu-latest
 
     env:
+      # Azure credentials stored in GitHub Secrets
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
     steps:
+      # 1. Checkout repo
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Setup Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      # 4. Login to Azure
       - name: Login to Azure
         run: |
           az login --service-principal \
@@ -48,13 +54,15 @@ jobs:
             -p $AZURE_CLIENT_SECRET \
             --tenant $AZURE_TENANT_ID
 
+      # 5. Run tests
       - name: Run tests
         run: |
           pytest --maxfail=1 --disable-warnings -q
 
+      # 6. Upload test report
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: pytest-report
-          path: pytest-report.xml
+          path: pytest-report.xml  # generate with pytest --junitxml=pytest-report.xml
