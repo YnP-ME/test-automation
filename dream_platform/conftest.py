@@ -4,9 +4,7 @@ import pytest
 import yaml
 from playwright.sync_api import sync_playwright, expect
 from dream_platform.ui.pages.login_page import LoginPage
-import requests
-from datetime import datetime, timezone, timedelta
-import time
+
 
 # ---------- Load config ----------
 def load_config():
@@ -37,13 +35,18 @@ def base_url(request, config):
 @pytest.fixture(scope="session")
 def browser_page(request):
     browser_name = request.config.getoption("--browser")
+
+    # ---------- KEY FIX: dynamic headless ----------
+    # On CI, set headless=True; locally, headless=False
+    headless_mode = os.getenv("CI") == "true"
+
     playwright = sync_playwright().start()
     if browser_name == "chromium":
-        browser = playwright.chromium.launch(headless=False)
+        browser = playwright.chromium.launch(headless=headless_mode)
     elif browser_name == "firefox":
-        browser = playwright.firefox.launch(headless=False)
+        browser = playwright.firefox.launch(headless=headless_mode)
     elif browser_name == "webkit":
-        browser = playwright.webkit.launch(headless=False)
+        browser = playwright.webkit.launch(headless=headless_mode)
     else:
         raise ValueError(f"Unknown browser: {browser_name}")
 
@@ -106,7 +109,7 @@ def get_last_reset_email_graph(user_email: str, max_wait=60):
     import requests
     import time
 
-    start_time = datetime.now(timezone.utc) - timedelta(seconds=5)  # small buffer
+    start_time = datetime.now(timezone.utc) - timedelta(seconds=5)
     end_time = (start_time + timedelta(seconds=max_wait)).timestamp()
 
     while datetime.now(timezone.utc).timestamp() < end_time:
@@ -121,7 +124,7 @@ def get_last_reset_email_graph(user_email: str, max_wait=60):
                 continue
 
             msg_time = datetime.fromisoformat(received.replace("Z", "+00:00"))
-            print("DEBUG EMAIL:", sender, msg_time)  # debug
+            print("DEBUG EMAIL:", sender, msg_time)
 
             if "inquiries@quantumone.ae" in sender and msg_time > start_time:
                 return msg["body"]["content"]
