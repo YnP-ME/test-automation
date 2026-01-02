@@ -7,4 +7,6 @@ pyee==13.0.0
 Pygments==2.19.2
 pytest==9.0.2
 typing_extensions==4.15.0
-msal>=1.24.0
+msal==1.28.0
+PyYAML==6.0.1
+
