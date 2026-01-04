@@ -1,3 +1,5 @@
+import time
+
 from playwright.sync_api import expect
 from dream_platform.ui.pages.login_page import LoginPage
 from dream_platform.ui.pages.user_page import UserPage
@@ -23,7 +25,7 @@ def restore_password(page, base_url, config):
     login.enter_username(creds["username"])
     login.enter_password(new_password)
     login.click_login()
-
+    time.sleep(1)
     if user.user_profile_link.is_visible():
         user.click_user_icon()
         user.click_change_password()

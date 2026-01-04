@@ -10,7 +10,7 @@ class UserPage(BasePage):
 
         # ---------- Locators ----------
         # Main profile page
-        self.user_profile_link = page.get_by_role("link", name="Test Employee")
+        self.user_profile_link = page.get_by_role("link", name="Employee")
         self.profile_header = page.locator("h1:text('Profile Settings')")  # <h1> header
         self.first_name_input = page.locator("label:text('First name:') + div input")
         self.last_name_input = page.locator("label:text('Last name:') + div input")
