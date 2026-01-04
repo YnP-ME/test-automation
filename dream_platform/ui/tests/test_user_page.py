@@ -89,7 +89,5 @@ def test_password_change_and_login(browser_page, base_url, config):
     expect(login.invalid_login_error, "Invalid login error not visible").to_be_visible()
     expect(login.invalid_login_error, "Error text mismatch").to_have_text("Incorrect login or password")
 
-    print("starting restore passs")
-
     #Restore original password
     restore_password(browser_page, base_url, config)
