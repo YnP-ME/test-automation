@@ -2,6 +2,7 @@ import time
 from dream_platform.ui.pages.login_page import LoginPage
 from dream_platform.ui.pages.user_page import UserPage
 from playwright.sync_api import expect
+from dream_platform.utils.helper import restore_password
 
 
 def test_user_profile_page_visible(browser_page, base_url, login_as_user):
@@ -42,7 +43,7 @@ def test_change_password_modal_elements(browser_page, base_url):
     user.cancel_password()
 
 
-def test_password_change_and_login(browser_page, base_url, config, restore_password):
+def test_password_change_and_login(browser_page, base_url, config):
     """Test password change workflow and login validation with old/new passwords."""
     login = LoginPage(browser_page, base_url)
     user = UserPage(browser_page, base_url)
@@ -87,3 +88,8 @@ def test_password_change_and_login(browser_page, base_url, config, restore_passw
     # Assertions for login failure with old password
     expect(login.invalid_login_error, "Invalid login error not visible").to_be_visible()
     expect(login.invalid_login_error, "Error text mismatch").to_have_text("Incorrect login or password")
+
+    print("starting restore passs")
+
+    #Restore original password
+    restore_password(browser_page, base_url, config)
