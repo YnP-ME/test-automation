@@ -11,7 +11,7 @@ class TimesheetPage(BasePage):
 
         # ---------- Timesheet page elements ----------
         self.timesheet_header = page.locator("h1:has-text('Timesheet')")
-        self.add_entry_button = page.get_by_role("button", name="Add Entry")
+        self.add_project_code = page.get_by_role("textbox", name="projectCode")
         self.submit_timesheet_button = page.get_by_role("button", name="Submit Timesheet")
 
         # Timesheet table columns
@@ -35,9 +35,9 @@ class TimesheetPage(BasePage):
         """Navigate to the timesheet page."""
         return self.goto(self.url)
 
-    def click_add_entry(self):
-        """Click the 'Add Entry' button to open the entry form."""
-        self.add_entry_button.click()
+    def click_add_project_code(self):
+        """Click the 'Add project code' """
+        self.add_project_code.click()
 
     def fill_entry_form(self, date, hours, project):
         """Fill in the timesheet entry form."""

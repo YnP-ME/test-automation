@@ -11,7 +11,7 @@ def test_timesheet_page_ui_elements(browser_page, base_url, login_as_user):
     expect(timesheet.timesheet_header, "Timesheet header is not visible").to_be_visible()
 
     # Assertions for buttons visibility
-    expect(timesheet.add_entry_button, "Add Entry button is not visible").to_be_visible()
+    expect(timesheet.add_entry_button, "Add project code field is not visible").to_be_visible()
     expect(timesheet.submit_timesheet_button, "Submit Timesheet button is not visible").to_be_visible()
 
     # Assertions for table columns visibility
