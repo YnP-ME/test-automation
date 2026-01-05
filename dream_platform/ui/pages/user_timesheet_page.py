@@ -10,22 +10,19 @@ class TimesheetPage(BasePage):
         self.url = f"{base_url}timesheet"
 
         # ---------- Timesheet page elements ----------
+        self.page_header = page.locator("header.container-wrapper")
         self.timesheet_header = page.locator("h1:has-text('Timesheet')")
-        self.add_project_code = page.get_by_role("textbox", name="projectCode")
+        self.back_button = page.get_by_role("button", name="Back")
+        self.timesheet_form = page.locator('form:has(button[type="submit"]:has-text("Submit Timesheet"))')
+        self.project_code_input = page.locator('input[name="projectCode"][placeholder="Add project code"]')
         self.submit_timesheet_button = page.get_by_role("button", name="Submit Timesheet")
+        self.week_table = page.locator("div.grid.grid-cols-6")
+        self.total_hours = page.locator("div.pt-5.flex.items-center.justify-center span")
+        self.common_codes_section = page.locator("p:has-text('Common Codes:')")
 
-        # Timesheet table columns
-        self.timesheet_table = page.locator("table#timesheet")
-        self.date_column = page.locator("table#timesheet th:has-text('Date')")
-        self.hours_column = page.locator("table#timesheet th:has-text('Hours')")
-        self.project_column = page.locator("table#timesheet th:has-text('Project')")
-
-        # Add entry modal/form
-        self.entry_date_input = page.locator("input[name='entry_date']")
-        self.entry_hours_input = page.locator("input[name='entry_hours']")
-        self.entry_project_select = page.locator("select[name='entry_project']")
-        self.save_entry_button = page.get_by_role("button", name="Save")
-        self.cancel_entry_button = page.get_by_role("button", name="Cancel")
+        # Locate by exact text
+        self.paid_vacation_button = page.locator("button", has_text="RQM317: Paid Vacation")
+        self.sick_leave_button = page.locator("button", has_text="BDL757: Sick Leave")
 
         # Submission success message
         self.submission_success_message = page.locator("text=Timesheet submitted successfully")
@@ -35,24 +32,23 @@ class TimesheetPage(BasePage):
         """Navigate to the timesheet page."""
         return self.goto(self.url)
 
-    def click_add_project_code(self):
-        """Click the 'Add project code' """
-        self.add_project_code.click()
+    def enter_project_code(self, code: str):
+        """
+        Clicks the project code input and types the code.
+        """
+        self.project_code_input.click()
+        self.project_code_input.fill(code)
+        self.project_code_input.press("Enter")
 
-    def fill_entry_form(self, date, hours, project):
-        """Fill in the timesheet entry form."""
-        self.entry_date_input.fill(date)
-        self.entry_hours_input.fill(hours)
-        self.entry_project_select.select_option(project)
+    def get_project_text(self, code: str) -> str:
+        """
+        Returns the full text of the project row with the given project code.
+        Example: "OHV519"
+        """
+        # Locate the row by the exact project code
+        project_row_locator = self.page.locator(f'div.flex.justify-between.items-center span:has-text("{code}")')
+        project_row_locator.wait_for(state="visible")
+        return project_row_locator.inner_text()
 
-    def save_entry(self):
-        """Click the 'Save' button to save the timesheet entry."""
-        self.save_entry_button.click()
 
-    def cancel_entry(self):
-        """Click the 'Cancel' button to close the entry form."""
-        self.cancel_entry_button.click()
 
-    def submit_timesheet(self):
-        """Click the 'Submit Timesheet' button."""
-        self.submit_timesheet_button.click()
