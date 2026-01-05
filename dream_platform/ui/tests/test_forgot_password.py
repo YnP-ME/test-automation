@@ -55,6 +55,7 @@ def test_forgot_password_full_flow(browser_page, base_url, config):
     expect(login.user_profile_link).to_be_visible()
 
     #logout
+    time.sleep(1)
     login.click_logout()
     login.confirm_logout()
     # Step 4: Restore original password
