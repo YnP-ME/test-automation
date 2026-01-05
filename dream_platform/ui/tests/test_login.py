@@ -45,7 +45,7 @@ def test_logout(browser_page, base_url):
 
     # Click logout
     login.click_logout()
-    time.sleep(2)  # Could replace with proper wait
+    time.sleep(1)
 
     # Wait for logout modal
     expect(login.logout_modal_title).to_be_visible()
@@ -78,7 +78,6 @@ def test_invalid_login_wrong_password(browser_page, base_url, config):
     """Login should fail with wrong password."""
     login = LoginPage(browser_page, base_url)
     login.open_login()
-    time.sleep(2)  # Could replace with proper wait
 
     creds = config["users"]["user"]
     login.enter_username(creds["username"])
@@ -138,3 +137,7 @@ def test_cancel_logout(browser_page, base_url):
     expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
     expect(login.performance_review_panel_button, "Performance Review panel link not visible").to_be_visible()
     expect(login.user_profile_link, "User profile link not visible").to_be_visible()
+
+    #logout
+    login.click_logout()
+    login.confirm_logout()

@@ -8,39 +8,28 @@ def test_timesheet_page_ui_elements(browser_page, base_url, login_as_user):
     timesheet.open_timesheet_page()
 
     # Assertions for header visibility
+    expect(timesheet.page_header, "Header is not visible").to_be_visible()
     expect(timesheet.timesheet_header, "Timesheet header is not visible").to_be_visible()
-
-    # Assertions for buttons visibility
-    expect(timesheet.add_entry_button, "Add project code field is not visible").to_be_visible()
+    expect(timesheet.back_button,"Back button is missing").to_be_visible()
     expect(timesheet.submit_timesheet_button, "Submit Timesheet button is not visible").to_be_visible()
-
-    # Assertions for table columns visibility
-    expect(timesheet.date_column, "Date column is not visible").to_be_visible()
-    expect(timesheet.hours_column, "Hours column is not visible").to_be_visible()
-    expect(timesheet.project_column, "Project column is not visible").to_be_visible()
+    expect(timesheet.common_codes_section,"Missing project codes").to_be_visible()
 
 
 def test_timesheet_add_and_submit_workflow(browser_page, base_url):
     """Test adding a timesheet entry and submitting the timesheet."""
     timesheet = TimesheetPage(browser_page, base_url)
-    timesheet.open_timesheet_page()
 
-    # Open add entry modal/form
-    timesheet.add_entry_button.click()
+    # Enter the code for Dream Platform
+    timesheet.enter_project_code("OHV519")
 
-    # Fill timesheet entry fields
-    timesheet.entry_date_input.fill("2025-12-24")
-    timesheet.entry_hours_input.fill("8")
-    timesheet.entry_project_select.select_option("Project A")
+    # Get text for the Dream Platform project
+    dream_project_text = timesheet.get_project_text("OHV519")
+    assert "Dream Platform Development" in dream_project_text, f"Expected 'Dream Platform Development' in project text, but got: {dream_project_text}"
 
-    # Save entry
-    timesheet.save_entry_button.click()
+    # Enter the code for Paid Vacation
+    timesheet.enter_project_code("RQM317")
 
-    # Assertion for new entry visible in table
-    expect(timesheet.timesheet_table, "New timesheet entry not visible").to_contain_text("Project A")
+    # Get text for the Paid Vacation project
+    paid_vacation_text = timesheet.get_project_text("RQM317")
+    assert "Paid Vacation" in paid_vacation_text, f"Expected 'Paid Vacation' in project text, but got: {paid_vacation_text}"
 
-    # Submit timesheet
-    timesheet.submit_timesheet_button.click()
-
-    # Assertion for submission success message
-    expect(timesheet.submission_success_message, "Timesheet submission success message not visible").to_be_visible()

@@ -57,6 +57,5 @@ def test_forgot_password_full_flow(browser_page, base_url, config):
     #logout
     login.click_logout()
     login.confirm_logout()
-
     # Step 4: Restore original password
     restore_password(browser_page, base_url, config)

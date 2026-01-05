@@ -11,10 +11,10 @@ class UserPage(BasePage):
         # ---------- Locators ----------
         # Main profile page
         self.user_profile_link = page.get_by_role("link", name="Employee")
-        self.profile_header = page.locator("h1:text('Profile Settings')")  # <h1> header
+        self.profile_header = page.locator('a[href="/profile"] >> text=Profile Settings')
         self.first_name_input = page.locator("label:text('First name:') + div input")
         self.last_name_input = page.locator("label:text('Last name:') + div input")
-        self.email_input = page.locator("input[disabled][value*='@']")  # email input
+        self.email_input = page.locator("input[disabled][value*='@']")
         self.change_password_button = page.locator("button:text('Change password')")
         self.save_changes_button = page.locator("button:text('Save changes')")
 

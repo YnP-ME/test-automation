@@ -29,8 +29,8 @@ def test_change_password_modal_elements(browser_page, base_url):
     user = UserPage(browser_page, base_url)
 
     # Open change password modal
+    user.click_user_icon()
     user.click_change_password()
-    time.sleep(1)  # Could replace with proper wait
 
     # Assertions for modal and its elements visibility
     expect(user.change_password_modal, "Change password modal is not visible").to_be_visible()
