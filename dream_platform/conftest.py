@@ -1,9 +1,15 @@
-import os
 import msal
 import pytest
 import yaml
 from playwright.sync_api import sync_playwright, expect
 from dream_platform.ui.pages.login_page import LoginPage
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EMPLOYEE_USERNAME = os.getenv("EMPLOYEE_USERNAME")
+EMPLOYEE_PASSWORD = os.getenv("EMPLOYEE_PASSWORD")
 
 
 # ---------- Load config ----------
@@ -67,9 +73,8 @@ def browser_page(request):
 def login_as_user(browser_page, base_url, config):
     login = LoginPage(browser_page, base_url)
     login.open_login()
-    creds = config["users"]["user"]
-    login.enter_username(creds["username"])
-    login.enter_password(creds["password"])
+    login.enter_username(EMPLOYEE_USERNAME)
+    login.enter_password(EMPLOYEE_PASSWORD)
     login.click_login()
     expect(login.exit_button).to_be_visible()
 
@@ -77,9 +82,8 @@ def login_as_user(browser_page, base_url, config):
 def login_as_admin(browser_page, base_url, config):
     login = LoginPage(browser_page, base_url)
     login.open_login()
-    creds = config["users"]["admin"]
-    login.enter_username(creds["username"])
-    login.enter_password(creds["password"])
+    login.enter_username(EMPLOYEE_USERNAME)
+    login.enter_password(EMPLOYEE_PASSWORD)
     login.click_login()
     expect(login.admin_panel_button).to_be_visible()
 

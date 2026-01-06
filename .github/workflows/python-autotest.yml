@@ -25,6 +25,11 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ADMIN_USERNAME: ${{vars.ADMIN_USERNAME}}
+      ADMIN_PASSWORD: ${{vars.ADMIN_PASSWORD}}
+      EMPLOYEE_USERNAME: ${{vars.EMPLOYEE_USERNAME}}
+      EMPLOYEE_PASSWORD: ${{vars.EMPLOYEE_PASSWORD}}
+      EMPLOYEE_NEW_PASSWORD: ${{vars.EMPLOYEE_NEW_PASSWORD}}
 
     steps:
       - uses: actions/checkout@v4

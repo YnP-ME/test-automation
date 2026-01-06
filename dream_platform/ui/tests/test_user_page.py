@@ -1,8 +1,15 @@
-import time
 from dream_platform.ui.pages.login_page import LoginPage
 from dream_platform.ui.pages.user_page import UserPage
 from playwright.sync_api import expect
 from dream_platform.utils.helper import restore_password
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EMPLOYEE_USERNAME = os.getenv("EMPLOYEE_USERNAME")
+EMPLOYEE_PASSWORD = os.getenv("EMPLOYEE_PASSWORD")
+EMPLOYEE_NEW_PASSWORD = os.getenv("EMPLOYEE_NEW_PASSWORD")
 
 
 def test_user_profile_page_visible(browser_page, base_url, login_as_user):
@@ -47,15 +54,12 @@ def test_password_change_and_login(browser_page, base_url, config):
     """Test password change workflow and login validation with old/new passwords."""
     login = LoginPage(browser_page, base_url)
     user = UserPage(browser_page, base_url)
-    creds = config["users"]["user"]
-    original_password = creds["password"]
-    new_password = creds["new_pass"]
 
     # Change password → new
     user.click_user_icon()
     user.click_change_password()
-    user.current_password_input.fill(original_password)
-    user.new_password_input.fill(new_password)
+    user.current_password_input.fill(EMPLOYEE_PASSWORD)
+    user.new_password_input.fill(EMPLOYEE_NEW_PASSWORD)
     user.save_password_button.click()
 
     # Assertion for successful password change
@@ -67,8 +71,8 @@ def test_password_change_and_login(browser_page, base_url, config):
 
     # Login with new password → should succeed
     login.open_login()
-    login.enter_username(creds["username"])
-    login.enter_password(new_password)
+    login.enter_username(EMPLOYEE_USERNAME)
+    login.enter_password(EMPLOYEE_NEW_PASSWORD)
     login.click_login()
 
     # Assertions for successful login with new password
@@ -81,8 +85,8 @@ def test_password_change_and_login(browser_page, base_url, config):
     login.click_logout()
     login.confirm_logout()
     login.open_login()
-    login.enter_username(creds["username"])
-    login.enter_password(original_password)
+    login.enter_username(EMPLOYEE_USERNAME)
+    login.enter_password(EMPLOYEE_PASSWORD)
     login.click_login()
 
     # Assertions for login failure with old password
