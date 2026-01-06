@@ -36,7 +36,7 @@ def test_forgot_password_send_email_ui(browser_page, base_url):
     expect(forgot.success_message).to_be_visible()
 
  # Full flow: read email, open reset link, reset password ----------
-def test_forgot_password_full_flow(browser_page, base_url, config):
+def test_forgot_password_full_flow(browser_page, base_url):
     """One full orchestrated test: send email → fetch → reset → verify → restore"""
 
     # Step 1: Wait for email and extract link
@@ -65,4 +65,4 @@ def test_forgot_password_full_flow(browser_page, base_url, config):
     login.click_logout()
     login.confirm_logout()
     # Step 4: Restore original password
-    restore_password(browser_page, base_url, config)
+    restore_password(browser_page, base_url)
