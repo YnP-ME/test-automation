@@ -1,10 +1,15 @@
 name: Python AutoTest on Azure
 
 on:
-  push:
-    branches:
-      - main
-      - 'dev-*'
+  # Called from backend/frontend
+  workflow_call:
+    inputs:
+      environment:
+        required: false
+        type: string
+        default: dev
+
+  # Manual trigger
   workflow_dispatch:
     inputs:
       environment:
@@ -13,6 +18,12 @@ on:
         default: 'dev'
         type: choice
         options: [dev]
+
+  # When YOU update automation
+  push:
+    branches: [ main, dev ]
+
+  # Nightly regression
   schedule:
     - cron: '0 0 * * *'
 
@@ -25,11 +36,11 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      ADMIN_USERNAME: ${{vars.ADMIN_USERNAME}}
-      ADMIN_PASSWORD: ${{vars.ADMIN_PASSWORD}}
-      EMPLOYEE_USERNAME: ${{vars.EMPLOYEE_USERNAME}}
-      EMPLOYEE_PASSWORD: ${{vars.EMPLOYEE_PASSWORD}}
-      EMPLOYEE_NEW_PASSWORD: ${{vars.EMPLOYEE_NEW_PASSWORD}}
+      ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
+      EMPLOYEE_USERNAME: ${{ vars.EMPLOYEE_USERNAME }}
+      EMPLOYEE_PASSWORD: ${{ vars.EMPLOYEE_PASSWORD }}
+      EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
@@ -44,12 +55,10 @@ jobs:
           pip install -r dream_platform/requirements.txt
 
       - name: Install Playwright browsers
-        run: |
-           playwright install --with-deps    
+        run: playwright install --with-deps
 
       - name: Install Azure CLI
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
       - name: Login to Azure
         run: |
@@ -59,8 +68,7 @@ jobs:
             --tenant "$AZURE_TENANT_ID"
 
       - name: Run full UI autotest suite
-        run: |
-          pytest dream_platform/ui/tests --junitxml=pytest-report.xml
+        run: pytest dream_platform/ui/tests --junitxml=pytest-report.xml
 
       - name: Upload test report
         if: always()
