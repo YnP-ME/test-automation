@@ -1,7 +1,6 @@
 name: Python AutoTest on Azure
 
 on:
-  # Called from backend/frontend
   workflow_call:
     inputs:
       requirements_path:
@@ -14,7 +13,6 @@ on:
         required: true
         type: string
 
-  # Manual trigger
   workflow_dispatch:
     inputs:
       environment:
@@ -24,11 +22,9 @@ on:
         type: choice
         options: [dev]
 
-  # When YOU update automation
   push:
     branches: [ main, dev ]
 
-  # Nightly regression
   schedule:
     - cron: '0 0 * * *'
 
@@ -56,11 +52,9 @@ jobs:
 
       - name: Install dependencies & run tests
         run: |
-          # Use inputs if provided, otherwise default to paths in checked-out test-automation repo
+          # Use inputs from QA gate workflow
           REQUIREMENTS="${{ inputs.requirements_path }}"
           TESTS="${{ inputs.tests_path }}"
-          REQUIREMENTS=${REQUIREMENTS:-test-automation/dream_platform/requirements.txt}
-          TESTS=${TESTS:-test-automation/dream_platform/ui/tests}
 
           echo "Installing dependencies from $REQUIREMENTS"
           python -m pip install --upgrade pip
