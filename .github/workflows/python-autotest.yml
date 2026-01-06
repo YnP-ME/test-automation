@@ -56,11 +56,11 @@ jobs:
 
       - name: Install dependencies & run tests
         run: |
-          # Set paths with defaults if inputs are missing
+          # Use inputs if provided, otherwise default to paths in checked-out test-automation repo
           REQUIREMENTS="${{ inputs.requirements_path }}"
           TESTS="${{ inputs.tests_path }}"
-          REQUIREMENTS=${REQUIREMENTS:-dream_platform/requirements.txt}
-          TESTS=${TESTS:-dream_platform/ui/tests}
+          REQUIREMENTS=${REQUIREMENTS:-test-automation/dream_platform/requirements.txt}
+          TESTS=${TESTS:-test-automation/dream_platform/ui/tests}
 
           echo "Installing dependencies from $REQUIREMENTS"
           python -m pip install --upgrade pip
