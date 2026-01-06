@@ -1,5 +1,4 @@
 import time
-
 from playwright.sync_api import expect
 from dream_platform.ui.pages.login_page import LoginPage
 from dream_platform.ui.pages.user_page import UserPage
@@ -8,29 +7,31 @@ import imaplib
 import base64
 import msal
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+EMPLOYEE_USERNAME = os.getenv("EMPLOYEE_USERNAME")
+EMPLOYEE_PASSWORD = os.getenv("EMPLOYEE_PASSWORD")
+EMPLOYEE_NEW_PASSWORD = os.getenv("EMPLOYEE_NEW_PASSWORD")
 
 IMAP_SERVER = "outlook.office365.com"
 IMAP_PORT = 993
 SCOPES = ["https://outlook.office365.com/.default"]
-def restore_password(page, base_url, config):
-    creds = config["users"]["user"]
-    original_password = creds["password"]
-    new_password = creds["new_pass"]
-
+def restore_password(page, base_url):
     login = LoginPage(page, base_url)
     user = UserPage(page, base_url)
 
     login.open_login()
-    login.enter_username(creds["username"])
-    login.enter_password(new_password)
+    login.enter_username(EMPLOYEE_USERNAME)
+    login.enter_password(EMPLOYEE_NEW_PASSWORD)
     login.click_login()
     time.sleep(1)
     if user.user_profile_link.is_visible():
         user.click_user_icon()
         user.click_change_password()
-        user.current_password_input.fill(new_password)
-        user.new_password_input.fill(original_password)
+        user.current_password_input.fill(EMPLOYEE_NEW_PASSWORD)
+        user.new_password_input.fill(EMPLOYEE_PASSWORD)
         user.save_password_button.click()
         expect(user.password_change_success).to_be_visible()
         print("pass changed  successfully")
