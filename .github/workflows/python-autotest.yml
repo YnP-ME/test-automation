@@ -46,10 +46,6 @@ jobs:
       EMPLOYEE_USERNAME: ${{ vars.EMPLOYEE_USERNAME }}
       EMPLOYEE_PASSWORD: ${{ vars.EMPLOYEE_PASSWORD }}
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
-      REQUIREMENTS_PATH: dream_platform/requirements.txt
-      TESTS_PATH: dream_platform/ui/tests
-      FINAL_REQUIREMENTS: ${{ inputs.requirements_path != '' && inputs.requirements_path || 'dream_platform/requirements.txt' }}
-      FINAL_TESTS: ${{ inputs.tests_path != '' && inputs.tests_path || 'dream_platform/ui/tests' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -58,10 +54,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install dependencies & run tests
         run: |
+          # Set paths with defaults if inputs are missing
+          REQUIREMENTS="${{ inputs.requirements_path }}"
+          TESTS="${{ inputs.tests_path }}"
+          REQUIREMENTS=${REQUIREMENTS:-dream_platform/requirements.txt}
+          TESTS=${TESTS:-dream_platform/ui/tests}
+
+          echo "Installing dependencies from $REQUIREMENTS"
           python -m pip install --upgrade pip
-          pip install -r $FINAL_REQUIREMENTS
+          pip install -r "$REQUIREMENTS"
+
+          echo "Running tests from $TESTS"
+          pytest "$TESTS" --junitxml=pytest-report.xml --alluredir=allure-results
 
       - name: Install Playwright browsers
         run: playwright install --with-deps
@@ -75,9 +81,6 @@ jobs:
             -u "$AZURE_CLIENT_ID" \
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
-
-      - name: Run full UI autotest suite
-        run: pytest $FINAL_TESTS --junitxml=pytest-report.xml --alluredir=allure-results
 
       - name: Upload pytest report
         if: always()
