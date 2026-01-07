@@ -29,7 +29,7 @@ on:
     branches: [ main, dev ]
 
   push:
-   branches: [ main, dev ]
+    branches: [ main, dev ]
 
   # Nightly regression
   schedule:
@@ -51,21 +51,12 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
-      # Checkout dp-backend
-      - name: Checkout dp-backend
+      # Checkout the PR repo dynamically (backend/frontend/etc.)
+      - name: Checkout PR repo (if exists)
+        if: ${{ github.event.repository != null && github.repository != 'YnP-ME/test-automation' }}
         uses: actions/checkout@v4
-        with:
-          repository: YnP-ME/dp-backend
-          path: dp-backend
 
-      # Checkout dp-frontend
-      - name: Checkout dp-frontend
-        uses: actions/checkout@v4
-        with:
-          repository: YnP-ME/dp-frontend
-          path: dp-frontend
-
-      # Checkout test-automation repo
+      # Checkout TestAutomation repo
       - name: Checkout test-automation
         uses: actions/checkout@v4
         with:
@@ -100,7 +91,7 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-      # Run pytest (fixed --env and path)
+      # Run pytest (fixed --env, preserves tests_path)
       - name: Run pytest
         run: |
           cd test-automation
