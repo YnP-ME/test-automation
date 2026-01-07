@@ -1,7 +1,7 @@
 name: Python AutoTest on Azure
 
 on:
-  # Allows this workflow to be called from dp-backend
+  # Reusable workflow for other repos
   workflow_call:
     inputs:
       requirements_path:
@@ -14,13 +14,26 @@ on:
         required: true
         type: string
 
-  # Automatically run when PR is opened or updated in test-automation
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [ dev ]
+
+  # Automatic triggers for PRs and merges in TestAutomation
   pull_request:
     branches: [ main, dev ]
 
-  # Automatically run when PR is merged or push occurs to main/dev
   push:
     branches: [ main, dev ]
+
+  # Nightly regression
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   autotest:
@@ -38,33 +51,39 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
-      # Checkout dp-backend (for UI tests against backend)
-      - name: Checkout dp-backend
+      # Checkout the PR repo dynamically (backend/frontend/etc.)
+      - name: Checkout PR repo (if exists)
+        if: ${{ github.event.repository != null && github.repository != 'YnP-ME/test-automation' }}
         uses: actions/checkout@v4
 
-      # Checkout test-automation (for tests and requirements)
+      # Checkout TestAutomation repo
       - name: Checkout test-automation
         uses: actions/checkout@v4
         with:
           repository: YnP-ME/test-automation
           path: test-automation
 
+      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r test-automation/${{ inputs.requirements_path }}
+          pip install -r test-automation/${{ inputs.requirements_path || 'dream_platform/requirements.txt' }}
 
+      # Install Playwright browsers
       - name: Install Playwright browsers
         run: playwright install --with-deps
 
+      # Install Azure CLI
       - name: Install Azure CLI
         run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
+      # Login to Azure
       - name: Login to Azure
         run: |
           az login --service-principal \
@@ -72,12 +91,15 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
+      # Run pytest (fixed --env, preserves tests_path)
       - name: Run pytest
         run: |
-          pytest test-automation/${{ inputs.tests_path }} \
+          cd test-automation/dream_platform
+          pytest ${{ inputs.tests_path || '.' }} --env=${{ inputs.environment || 'production' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
+      # Upload pytest report
       - name: Upload pytest report
         if: always()
         uses: actions/upload-artifact@v4
@@ -85,21 +107,21 @@ jobs:
           name: pytest-report
           path: pytest-report.xml
 
+      # Install Allure
       - name: Install Allure
         run: |
           sudo apt-add-repository ppa:qameta/allure -y
           sudo apt update
           sudo apt install allure -y
 
-      - name: Generate Allure HTML report
-        if: always()
-        run: |
-          allure generate allure-results --clean -o allure-report
+      # Generate Allure report
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
 
-      - name: Deploy Allure Report to GitHub Pages
+      # Upload Allure report
+      - name: Upload Allure report
         if: always()
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-report
-          destination_dir: allure-report
+          name: allure-report
+          path: allure-report
