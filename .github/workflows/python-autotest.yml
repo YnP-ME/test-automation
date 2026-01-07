@@ -82,6 +82,7 @@ jobs:
       - name: Run pytest
         run: |
           pytest test-automation/${{ inputs.tests_path || '.' }} \
+            --env=${{ inputs.environment || 'dev' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
