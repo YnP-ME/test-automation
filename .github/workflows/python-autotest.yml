@@ -14,13 +14,26 @@ on:
         required: true
         type: string
 
-  # Automatic triggers for PRs and merges in TestAutomation
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [ dev ]
+
+    # Automatic triggers for PRs and merges in TestAutomation
   pull_request:
-    branches:
-      - main
+    branches: [ main, dev ]
+
   push:
-    branches:
-      - main
+   branches: [ main, dev ]
+
+  # Nightly regression
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   autotest:
