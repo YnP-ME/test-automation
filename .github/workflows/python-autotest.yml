@@ -91,11 +91,11 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-      # Run pytest (fixed --env, preserves tests_path)
+      # Run pytest (preserves tests_path)
       - name: Run pytest
         run: |
-          cd test-automation/dream_platform
-          pytest ${{ inputs.tests_path || '.' }} --env=${{ inputs.environment || 'production' }} \
+          cd $GITHUB_WORKSPACE/test-automation/dream_platform
+          pytest ${{ inputs.tests_path || 'ui/tests' }} --env=${{ inputs.environment || 'production' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
