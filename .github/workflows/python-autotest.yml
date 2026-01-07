@@ -1,6 +1,7 @@
 name: Python AutoTest on Azure
 
 on:
+  # Allows this workflow to be called from dp-backend
   workflow_call:
     inputs:
       requirements_path:
@@ -13,9 +14,13 @@ on:
         required: true
         type: string
 
-  # Automatically run when testers merge new tests
+  # Automatically run when PR is opened or updated in test-automation
+  pull_request:
+    branches: [ main, dev ]
+
+  # Automatically run when PR is merged or push occurs to main/dev
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   autotest:
@@ -33,11 +38,11 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
-      # Checkout PR repo (dp-backend)
-      - name: Checkout dp-backend (PR repo)
+      # Checkout dp-backend (for UI tests against backend)
+      - name: Checkout dp-backend
         uses: actions/checkout@v4
 
-      # Checkout test-automation repo
+      # Checkout test-automation (for tests and requirements)
       - name: Checkout test-automation
         uses: actions/checkout@v4
         with:
@@ -89,4 +94,12 @@ jobs:
       - name: Generate Allure HTML report
         if: always()
         run: |
-          allure generate allure-results --clean -o
+          allure generate allure-results --clean -o allure-report
+
+      - name: Deploy Allure Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
+          destination_dir: allure-report
