@@ -94,8 +94,8 @@ jobs:
       # Run pytest (preserves tests_path)
       - name: Run pytest
         run: |
-          cd $GITHUB_WORKSPACE/test-automation/dream_platform
-          pytest ${{ inputs.tests_path || 'ui/tests' }} --env=${{ inputs.environment || 'production' }} \
+          cd test-automation
+          pytest ${{ inputs.tests_path || 'dream_platform/ui/tests' }} --env=${{ inputs.environment || 'production' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
@@ -107,21 +107,21 @@ jobs:
           name: pytest-report
           path: pytest-report.xml
 
-      # Install Allure
-      - name: Install Allure
-        run: |
-          sudo apt-add-repository ppa:qameta/allure -y
-          sudo apt update
-          sudo apt install allure -y
-
-      # Generate Allure report
-      - name: Generate Allure report
-        run: allure generate allure-results --clean -o allure-report
-
-      # Upload Allure report
-      - name: Upload Allure report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
+#      # Install Allure
+#      - name: Install Allure
+#        run: |
+#          sudo apt-add-repository ppa:qameta/allure -y
+#          sudo apt update
+#          sudo apt install allure -y
+#
+#      # Generate Allure report
+#      - name: Generate Allure report
+#        run: allure generate allure-results --clean -o allure-report
+#
+#      # Upload Allure report
+#      - name: Upload Allure report
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: allure-report
+#          path: allure-report
