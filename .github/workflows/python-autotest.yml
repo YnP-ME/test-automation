@@ -122,7 +122,7 @@ jobs:
               
 
       - name: Upload Allure report artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: test-automation/allure-report
