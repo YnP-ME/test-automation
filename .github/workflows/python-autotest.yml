@@ -51,16 +51,26 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
-      # Checkout TestAutomation repo
+      # Checkout dp-backend
+      - name: Checkout dp-backend
+        uses: actions/checkout@v4
+        with:
+          repository: YnP-ME/dp-backend
+          path: dp-backend
+
+      # Checkout dp-frontend
+      - name: Checkout dp-frontend
+        uses: actions/checkout@v4
+        with:
+          repository: YnP-ME/dp-frontend
+          path: dp-frontend
+
+      # Checkout test-automation repo
       - name: Checkout test-automation
         uses: actions/checkout@v4
         with:
+          repository: YnP-ME/test-automation
           path: test-automation
-
-      # Checkout PR repo if workflow called from another repo
-      - name: Checkout PR repo (if exists)
-        if: ${{ github.event.repository != null && github.repository != 'YnP-ME/test-automation' }}
-        uses: actions/checkout@v4
 
       # Setup Python
       - name: Set up Python
@@ -90,11 +100,11 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-      # Run pytest (FIXED)
+      # Run pytest (fixed --env and path)
       - name: Run pytest
         run: |
           cd test-automation
-          pytest . --env=${{ inputs.environment || 'dev' }} \
+          pytest ${{ inputs.tests_path || '.' }} --env=${{ inputs.environment || 'dev' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
@@ -105,3 +115,22 @@ jobs:
         with:
           name: pytest-report
           path: pytest-report.xml
+
+      # Install Allure
+      - name: Install Allure
+        run: |
+          sudo apt-add-repository ppa:qameta/allure -y
+          sudo apt update
+          sudo apt install allure -y
+
+      # Generate Allure report
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
+
+      # Upload Allure report
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
