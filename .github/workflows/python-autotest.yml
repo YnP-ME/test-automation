@@ -13,6 +13,10 @@ on:
         required: true
         type: string
 
+  # Automatically run when testers merge new tests
+  push:
+    branches: [ main ]
+
 jobs:
   autotest:
     name: Run Python UI Tests
@@ -29,9 +33,11 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
+      # Checkout PR repo (dp-backend)
       - name: Checkout dp-backend (PR repo)
         uses: actions/checkout@v4
 
+      # Checkout test-automation repo
       - name: Checkout test-automation
         uses: actions/checkout@v4
         with:
@@ -83,12 +89,4 @@ jobs:
       - name: Generate Allure HTML report
         if: always()
         run: |
-          allure generate allure-results --clean -o allure-report
-
-      - name: Deploy Allure Report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-report
-          destination_dir: allure-report
+          allure generate allure-results --clean -o
