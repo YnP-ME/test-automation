@@ -107,12 +107,13 @@ jobs:
           name: pytest-report
           path: pytest-report.xml
 
-      - name: Install Allure
+      - name: Install Allure CLI
         run: |
-          curl -Ls https://github.com/allure-framework/allure2/releases/latest/download/allure-2.25.0.tgz -o allure.tgz
-          tar -zxvf allure.tgz
-          sudo mv allure-2.25.0 /opt/allure
-          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+          ALLURE_VERSION=2.27.0
+          curl -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz -o allure.tgz
+          tar -xzf allure.tgz
+          sudo mv allure-${ALLURE_VERSION} /opt/allure
+          sudo ln -sf /opt/allure/bin/allure /usr/bin/allure
 
       - name: Generate Allure report
         run: |
