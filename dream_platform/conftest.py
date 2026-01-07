@@ -29,7 +29,6 @@ def pytest_addoption(parser):
     parser.addoption(
         "--env",
         action="store",
-        default="dev",  # <-- add default here
         help="Environment name"
     )
 
