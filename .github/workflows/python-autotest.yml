@@ -95,7 +95,7 @@ jobs:
       - name: Run pytest
         run: |
           cd test-automation/dream_platform
-          pytest ${{ inputs.tests_path || '.' }} --env=${{ inputs.environment || 'dev' }} \
+          pytest ${{ inputs.tests_path || '.' }} --env=${{ inputs.environment || 'production' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
