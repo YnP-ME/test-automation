@@ -5,6 +5,9 @@ from playwright.sync_api import sync_playwright, expect
 from dream_platform.ui.pages.login_page import LoginPage
 import os
 from dotenv import load_dotenv
+from datetime import datetime, timezone, timedelta
+import requests
+import time
 
 load_dotenv()
 
@@ -117,10 +120,6 @@ def get_last_reset_email_graph(user_email: str, max_wait=60):
     token = get_access_token()
     headers = {"Authorization": f"Bearer {token}"}
     url = f"https://graph.microsoft.com/v1.0/users/{user_email}/mailFolders/Inbox/messages?$top=20"
-
-    from datetime import datetime, timezone, timedelta
-    import requests
-    import time
 
     start_time = datetime.now(timezone.utc) - timedelta(seconds=5)
     end_time = (start_time + timedelta(seconds=max_wait)).timestamp()
