@@ -131,7 +131,13 @@ jobs:
     permissions:
       pages: write
       id-token: write
+<<<<<<< Updated upstream
     environment: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'pr-pages' }}
+=======
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+>>>>>>> Stashed changes
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
