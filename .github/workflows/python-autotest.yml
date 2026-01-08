@@ -127,9 +127,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'pr-pages' }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
