@@ -51,13 +51,6 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
-      - name: Checkout triggering repo
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}                     # the repo that triggered this workflow
-          ref: ${{ github.event.pull_request.head.ref || github.head_ref || 'main' }}  # fallback to main branch if PR branch missing
-          token: ${{ secrets.GITHUB_TOKEN }}                      # access for forks & private repos
-
       # Checkout TestAutomation repo
       - name: Checkout test-automation
         uses: actions/checkout@v4
