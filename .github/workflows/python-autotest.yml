@@ -52,9 +52,13 @@ jobs:
 
     steps:
       # Checkout the PR repo dynamically (backend/frontend/etc.)
-      - name: Checkout PR repo (if exists)
+      - name: Checkout PR repo
         if: ${{ github.event.repository != null && github.repository != 'YnP-ME/test-automation' }}
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}  # the repo that triggered the workflow
+          ref: ${{ github.ref }}               # branch or PR ref
+          token: ${{ secrets.GITHUB_TOKEN }}   # access to private repos/forks
 
       # Checkout TestAutomation repo
       - name: Checkout test-automation
