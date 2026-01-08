@@ -112,10 +112,10 @@ jobs:
         run: |
           cd test-automation
 #          Copy previous history if exists
-         if [ -d allure-report/history ]; then
-          cp -r allure-report/history allure-results/history
-         fi
-         allure generate allure-results -o allure-report --clean     
+          if [ -d allure-report/history ]; then
+            cp -r allure-report/history allure-results/history
+          fi
+          allure generate allure-results -o allure-report --clean
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
