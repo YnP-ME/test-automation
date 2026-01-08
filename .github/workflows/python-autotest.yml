@@ -118,6 +118,7 @@ jobs:
 
   deploy-allure:
     needs: autotest
+    if: always()
     runs-on: ubuntu-latest
     permissions:
       pages: write
