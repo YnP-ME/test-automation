@@ -99,13 +99,13 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
-      # Upload pytest report
-      - name: Upload pytest report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: pytest-report.xml
+#      # Upload pytest report
+#      - name: Upload pytest report
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: pytest-report
+#          path: pytest-report.xml
 
       - name: Install Allure CLI
         run: |
@@ -121,7 +121,7 @@ jobs:
           allure generate allure-results --clean -o allure-report         
 
       - name: Upload report to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: test-automation/allure-report
 
