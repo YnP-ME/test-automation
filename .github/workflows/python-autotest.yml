@@ -56,9 +56,9 @@ jobs:
         if: ${{ github.event.repository != null && github.repository != 'YnP-ME/test-automation' }}
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository }}      # the repo that triggered the workflow
+          repository: ${{ github.repository }}                     # the repo that triggered this workflow
           ref: ${{ github.event.pull_request.head.ref || github.ref }}  # PR branch or normal branch
-          token: ${{ secrets.GITHUB_TOKEN }}        # access for forks/private repos
+          token: ${{ secrets.GITHUB_TOKEN }}                      # allows forks & private repos
 
 
       # Checkout TestAutomation repo
