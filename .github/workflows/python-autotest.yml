@@ -99,7 +99,6 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
-
       - name: Install Allure CLI
         run: |
           ALLURE_VERSION=2.27.0
@@ -111,7 +110,7 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-#          Copy previous history if exists
+          # Copy previous history if exists
           if [ -d allure-report/history ]; then
             cp -r allure-report/history allure-results/history
           fi
