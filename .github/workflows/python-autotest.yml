@@ -131,10 +131,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Comment Allure link on PR
-        if: startsWith(github.ref, 'refs/pull/')
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: "Allure Report: https://YnP-ME.github.io/test-automation/${{ github.run_id }}/"
