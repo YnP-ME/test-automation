@@ -99,14 +99,6 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
-      # Upload pytest report
-      - name: Upload pytest report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: pytest-report.xml
-
       - name: Install Allure CLI
         run: |
           ALLURE_VERSION=2.27.0
@@ -118,37 +110,24 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results --clean -o allure-report
-              
+          # Copy previous history if exists
+          if [ -d allure-report/history ]; then
+            cp -r allure-report/history allure-results/history
+          fi
+          allure generate allure-results -o allure-report --clean
 
-      - name: Upload Allure report artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload report to GitHub Pages
+        uses: actions/upload-pages-artifact@v4
         with:
-          name: allure-report
           path: test-automation/allure-report
-          
- 
+
   deploy-allure:
-    needs: ui-tests
+    needs: autotest
     runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
+    environment: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'pr-pages' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download Allure report artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
-
       - id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          path: allure-report
-
-
-
-
