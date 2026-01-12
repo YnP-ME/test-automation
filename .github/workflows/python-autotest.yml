@@ -18,9 +18,9 @@ on:
       environment:
         description: 'Environment to test'
         required: true
-        default: 'dev'
+        default: 'production'
         type: choice
-        options: [ dev ]
+        options: [ production ]
 
   pull_request:
     branches: [ main, dev ]
