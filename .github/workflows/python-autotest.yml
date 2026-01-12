@@ -78,6 +78,15 @@ jobs:
       - name: Install Azure CLI
         run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
+        # Install Allure CLI
+      - name: Install Allure CLI
+        run: |
+          ALLURE_VERSION=2.27.0
+          curl -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz -o allure.tgz
+          tar -xzf allure.tgz
+          sudo mv allure-${ALLURE_VERSION} /opt/allure
+          sudo ln -sf /opt/allure/bin/allure /usr/bin/allure
+
       # Login to Azure
       - name: Login to Azure
         run: |
@@ -85,6 +94,15 @@ jobs:
             -u "$AZURE_CLIENT_ID" \
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
+
+        #  Download previous Allure history
+      - name: Download previous Allure history
+        if: ${{ always() }}
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-history
+          path: test-automation/allure-results/history
+        continue-on-error: true
 
       # Run pytest (preserves tests_path)
       - name: Run pytest
@@ -94,27 +112,25 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
-      - name: Install Allure CLI
-        run: |
-          ALLURE_VERSION=2.27.0
-          curl -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz -o allure.tgz
-          tar -xzf allure.tgz
-          sudo mv allure-${ALLURE_VERSION} /opt/allure
-          sudo ln -sf /opt/allure/bin/allure /usr/bin/allure
 
       - name: Generate Allure report
         run: |
           cd test-automation
-          # Copy previous history if exists
-          if [ -d allure-report/history ]; then
-            cp -r allure-report/history allure-results/history
-          fi
           allure generate allure-results -o allure-report
+
+      - name: Upload Allure report history for next run
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-history
+          path: test-automation/allure-report/history
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
         with:
           path: test-automation/allure-report
+          artifact_name: github-pages
+
 
   deploy-allure:
     needs: autotest
