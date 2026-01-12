@@ -132,7 +132,8 @@ jobs:
           cd allure-history
           git add history
           git commit -m "Update Allure history from workflow run $GITHUB_RUN_ID" || echo "No changes"
-          git push origin allure-history
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git allure-history
+      
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
