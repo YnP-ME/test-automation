@@ -109,7 +109,7 @@ jobs:
           if [ -d allure-report/history ]; then
             cp -r allure-report/history allure-results/history
           fi
-          allure generate allure-results -o allure-report --clean
+          allure generate allure-results -o allure-report
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
@@ -127,3 +127,8 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Show Allure report link
+        run: |
+          echo "Allure report deployed here:"
+          echo "https://ynp-me.github.io/test-automation/#"
