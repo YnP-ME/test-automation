@@ -1,18 +1,6 @@
 name: Python AutoTest on Azure
 
 on:
-  workflow_call:
-    inputs:
-      requirements_path:
-        required: true
-        type: string
-      tests_path:
-        required: true
-        type: string
-      environment:
-        required: true
-        type: string
-
   workflow_dispatch:
     inputs:
       environment:
@@ -21,15 +9,6 @@ on:
         default: 'dev'
         type: choice
         options: [ dev ]
-
-  pull_request:
-    branches: [ main, dev ]
-
-  push:
-    branches: [ main, dev ]
-
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   autotest:
@@ -40,35 +19,31 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
-      ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
-      EMPLOYEE_USERNAME: ${{ vars.EMPLOYEE_USERNAME }}
-      EMPLOYEE_PASSWORD: ${{ vars.EMPLOYEE_PASSWORD }}
-      EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
+      # Checkout code
       - name: Checkout TestAutomation repo
         uses: actions/checkout@v4
         with:
-          repository: YnP-ME/test-automation
           path: test-automation
 
+      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r test-automation/${{ inputs.requirements_path || 'dream_platform/requirements.txt' }}
+          pip install -r test-automation/dream_platform/requirements.txt
 
+      # Install Playwright browsers
       - name: Install Playwright browsers
         run: playwright install --with-deps
 
-      - name: Install Azure CLI
-        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
+      # Install Allure CLI
       - name: Install Allure CLI
         run: |
           ALLURE_VERSION=2.27.0
@@ -77,72 +52,55 @@ jobs:
           sudo mv allure-${ALLURE_VERSION} /opt/allure
           sudo ln -sf /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Login to Azure
-        run: |
-          az login --service-principal \
-            -u "$AZURE_CLIENT_ID" \
-            -p "$AZURE_CLIENT_SECRET" \
-            --tenant "$AZURE_TENANT_ID"
+      # Download previous history artifact (if exists)
+      - name: Download previous Allure history
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-history
+          path: allure-history
+        continue-on-error: true
 
-      - name: Checkout Allure history branch
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          
-          GITHUB_AUTH="https://${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git"
-          
-          # Clone the branch if it exists
-          if git ls-remote --exit-code --heads $GITHUB_AUTH allure-history; then
-            git clone --branch allure-history $GITHUB_AUTH allure-history
-          else
-            # Create branch if it does not exist
-            git clone $GITHUB_AUTH allure-history
-            cd allure-history
-            git checkout --orphan allure-history
-            mkdir -p history
-            git add history
-            git commit -m "Initialize Allure history branch"
-            git push $GITHUB_AUTH allure-history
-            cd ..
-          fi
-
+      # Restore history into allure-results
       - name: Restore previous Allure history
         run: |
           mkdir -p test-automation/allure-results
-          if [ -d allure-history/history ]; then
-            cp -r allure-history/history test-automation/allure-results/history
+          if [ -d allure-history ]; then
+            cp -r allure-history/* test-automation/allure-results/
           fi
 
+      # Run tests
       - name: Run pytest
         run: |
           cd test-automation
-          pytest ${{ inputs.tests_path || 'dream_platform/ui/tests' }} --env=${{ inputs.environment || 'production' }} \
+          pytest dream_platform/ui/tests --env=dev \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
+      # Generate Allure report
       - name: Generate Allure report
         run: |
           cd test-automation
           allure generate allure-results -o allure-report --clean
 
+      # Save updated history for next run
       - name: Save updated Allure history
         run: |
           mkdir -p allure-history
-          cp -r test-automation/allure-results/history allure-history/history
-          cd allure-history
-          git add history
-          git commit -m "Update Allure history from workflow run $GITHUB_RUN_ID" || echo "No changes"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git allure-history
-      
+          cp -r test-automation/allure-results/history/* allure-history/
+      - name: Upload Allure history artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-history
+          path: allure-history
 
-      - name: Upload report to GitHub Pages
+      # Upload report to GitHub Pages
+      - name: Upload Allure report
         uses: actions/upload-pages-artifact@v4
         with:
           path: test-automation/allure-report
 
   deploy-allure:
     needs: autotest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -152,7 +110,15 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Show Allure report link
+      - name: Output Allure report link
         run: |
-          echo "Allure report deployed here:"
-          echo "https://ynp-me.github.io/test-automation/#"
+          REPORT_URL="https://ynp-me.github.io/test-automation/#"
+          echo "Allure report deployed here: $REPORT_URL"
+          # Also make it a clickable output
+          echo "report-url=$REPORT_URL" >> $GITHUB_OUTPUT
+
+      - name: Add Allure report link to workflow summary
+        run: |
+          echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
+          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/#)" >> $GITHUB_STEP_SUMMARY
+
