@@ -86,18 +86,15 @@ jobs:
 
       # ----------------- Allure history logic -----------------
 
-      - name: Download previous Allure history
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-history
-          path: allure-history
-        continue-on-error: true
-
       - name: Restore previous Allure history
         run: |
-          mkdir -p test-automation/allure-results
-          if [ -d allure-history ]; then
-            cp -r allure-history/* test-automation/allure-results/
+          mkdir -p test-automation/allure-results/history
+          git clone https://github.com/YnP-ME/test-automation.git gh-pages
+          if [ -d gh-pages/allure-report/history ]; then
+            cp -r gh-pages/allure-report/history/. test-automation/allure-results/history/
+            echo "History restored"
+          else
+            echo "No previous history"
           fi
 
       - name: Run pytest
@@ -112,27 +109,16 @@ jobs:
           cd test-automation
           allure generate allure-results -o allure-report --clean
 
-      - name: Save updated Allure history
+      - name: Preserve history into Pages
         run: |
-          mkdir -p allure-history
-          if [ -d test-automation/allure-results/history ]; then
-            cp -r test-automation/allure-results/history/. allure-history/
-            echo "Allure history saved."
-          else
-            echo "No Allure history found, skipping save."
-          fi
-
-
-      - name: Upload Allure history artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-history
-          path: allure-history
+          rm -rf gh-pages/allure-report
+          mkdir -p gh-pages/allure-report
+          cp -r test-automation/allure-report/. gh-pages/allure-report/
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
         with:
-          path: test-automation/allure-report
+          path: gh-pages/allure-report
 
   deploy-allure:
     needs: autotest
