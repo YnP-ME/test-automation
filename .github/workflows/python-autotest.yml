@@ -101,7 +101,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: allure-history
-          path: test-automation/allure-results/history || true
+          path: test-automation/allure-results/history
+        continue-on-error: true
 
       # Run pytest (preserves tests_path)
       - name: Run pytest
