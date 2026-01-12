@@ -107,14 +107,7 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report
-
-      - name: Preserve history into Pages
-        run: |
-          rm -rf gh-pages/allure-report
-          mkdir -p gh-pages/allure-report
-          cp -r test-automation/allure-report/. gh-pages/allure-report/
-    
+          allure generate allure-results -o allure-report  # <-- removed --clean
 
       - name: Preserve history into Pages
         run: |
@@ -126,6 +119,7 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: gh-pages/allure-report
+
 
   deploy-allure:
     needs: autotest
