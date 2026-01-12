@@ -84,23 +84,28 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-      # --- Persistent Allure history using a branch ---
       - name: Checkout Allure history branch
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          if git ls-remote --exit-code --heads https://github.com/YnP-ME/test-automation.git allure-history; then
-            git clone --branch allure-history https://github.com/YnP-ME/test-automation.git allure-history
+          
+          GITHUB_AUTH="https://${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git"
+          
+          # Clone the branch if it exists
+          if git ls-remote --exit-code --heads $GITHUB_AUTH allure-history; then
+            git clone --branch allure-history $GITHUB_AUTH allure-history
           else
-            git clone https://github.com/YnP-ME/test-automation.git allure-history
+            # Create branch if it does not exist
+            git clone $GITHUB_AUTH allure-history
             cd allure-history
             git checkout --orphan allure-history
             mkdir -p history
             git add history
             git commit -m "Initialize Allure history branch"
-            git push origin allure-history
+            git push $GITHUB_AUTH allure-history
             cd ..
-          fi
+          fi 
+      
 
       - name: Restore previous Allure history
         run: |
