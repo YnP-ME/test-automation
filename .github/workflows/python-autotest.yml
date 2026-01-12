@@ -1,7 +1,6 @@
 name: Python AutoTest on Azure
 
 on:
-  # Reusable workflow for other repos
   workflow_call:
     inputs:
       requirements_path:
@@ -14,7 +13,6 @@ on:
         required: true
         type: string
 
-  # Manual trigger
   workflow_dispatch:
     inputs:
       environment:
@@ -24,14 +22,12 @@ on:
         type: choice
         options: [ dev ]
 
-  # Automatic triggers for PRs and merges in TestAutomation
   pull_request:
     branches: [ main, dev ]
 
   push:
     branches: [ main, dev ]
 
-  # Nightly regression
   schedule:
     - cron: '0 0 * * *'
 
@@ -51,34 +47,28 @@ jobs:
       EMPLOYEE_NEW_PASSWORD: ${{ vars.EMPLOYEE_NEW_PASSWORD }}
 
     steps:
-      # Checkout TestAutomation repo
-      - name: Checkout test-automation
+      - name: Checkout TestAutomation repo
         uses: actions/checkout@v4
         with:
           repository: YnP-ME/test-automation
           path: test-automation
 
-      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r test-automation/${{ inputs.requirements_path || 'dream_platform/requirements.txt' }}
 
-      # Install Playwright browsers
       - name: Install Playwright browsers
         run: playwright install --with-deps
 
-      # Install Azure CLI
       - name: Install Azure CLI
         run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-        # Install Allure CLI
       - name: Install Allure CLI
         run: |
           ALLURE_VERSION=2.27.0
@@ -87,7 +77,6 @@ jobs:
           sudo mv allure-${ALLURE_VERSION} /opt/allure
           sudo ln -sf /opt/allure/bin/allure /usr/bin/allure
 
-      # Login to Azure
       - name: Login to Azure
         run: |
           az login --service-principal \
@@ -95,16 +84,30 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-        #  Download previous Allure history
-      - name: Download previous Allure history
-        if: ${{ always() }}
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-history
-          path: test-automation/allure-results/history
-        continue-on-error: true
+      # --- Persistent Allure history using a branch ---
+      - name: Checkout Allure history branch
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          if git ls-remote --exit-code --heads https://github.com/YnP-ME/test-automation.git allure-history; then
+            git clone --branch allure-history https://github.com/YnP-ME/test-automation.git allure-history
+          else
+            git clone https://github.com/YnP-ME/test-automation.git allure-history
+            cd allure-history
+            git checkout --orphan allure-history
+            mkdir -p history
+            git add history
+            git commit -m "Initialize Allure history branch"
+            git push origin allure-history
+            cd ..
+          fi
 
-      # Run pytest (preserves tests_path)
+      - name: Restore previous Allure history
+        run: |
+          if [ -d allure-history/history ]; then
+            cp -r allure-history/history test-automation/allure-results/history
+          fi
+
       - name: Run pytest
         run: |
           cd test-automation
@@ -112,25 +115,23 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
-
       - name: Generate Allure report
         run: |
           cd test-automation
           allure generate allure-results -o allure-report
 
-      - name: Upload Allure report history for next run
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-history
-          path: test-automation/allure-report/history
+      - name: Save updated Allure history
+        run: |
+          cp -r test-automation/allure-report/history allure-history/history
+          cd allure-history
+          git add history
+          git commit -m "Update Allure history from workflow run $GITHUB_RUN_ID" || echo "No changes"
+          git push origin allure-history
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
         with:
           path: test-automation/allure-report
-#          artifact_name: github-pages
-
 
   deploy-allure:
     needs: autotest
@@ -139,7 +140,6 @@ jobs:
     permissions:
       pages: write
       id-token: write
-#    environment: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'pr-pages' }}
     environment: github-pages
     steps:
       - id: deployment
