@@ -104,11 +104,11 @@ jobs:
             git commit -m "Initialize Allure history branch"
             git push $GITHUB_AUTH allure-history
             cd ..
-          fi 
-      
+          fi
 
       - name: Restore previous Allure history
         run: |
+          mkdir -p test-automation/allure-results
           if [ -d allure-history/history ]; then
             cp -r allure-history/history test-automation/allure-results/history
           fi
@@ -123,11 +123,12 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report
+          allure generate allure-results -o allure-report --clean
 
       - name: Save updated Allure history
         run: |
-          cp -r test-automation/allure-report/history allure-history/history
+          mkdir -p allure-history
+          cp -r test-automation/allure-results/history allure-history/history
           cd allure-history
           git add history
           git commit -m "Update Allure history from workflow run $GITHUB_RUN_ID" || echo "No changes"
