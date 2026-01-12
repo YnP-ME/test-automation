@@ -107,7 +107,14 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report --clean
+          allure generate allure-results -o allure-report
+
+      - name: Preserve history into Pages
+        run: |
+          rm -rf gh-pages/allure-report
+          mkdir -p gh-pages/allure-report
+          cp -r test-automation/allure-report/. gh-pages/allure-report/
+    
 
       - name: Preserve history into Pages
         run: |
