@@ -118,7 +118,7 @@ jobs:
           cp -r test-automation/allure-results/history/* allure-history/
 
       - name: Upload Allure history artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-history
           path: allure-history
