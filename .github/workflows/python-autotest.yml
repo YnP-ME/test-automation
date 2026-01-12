@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: test-automation/allure-report
-          artifact_name: github-pages
+#          artifact_name: github-pages
 
 
   deploy-allure:
