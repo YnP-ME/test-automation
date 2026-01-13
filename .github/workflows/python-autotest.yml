@@ -107,12 +107,12 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report  # DO NOT use --clean
+          allure generate allure-results -o allure-report 
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
         with:
-          path: test-automation/allure-report
+          path: test-automation/allure-results
 
   deploy-allure:
     needs: autotest
