@@ -89,8 +89,8 @@ jobs:
       - name: Restore previous Allure history
         run: |
           mkdir -p test-automation/allure-results/history
-          git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages
-          if [ -d gh-pages/allure-report/history ]; then
+          if curl --output /dev/null --silent --head --fail https://github.com/YnP-ME/test-automation/raw/main/gh-pages/allure-report/history/history.json; then
+            git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages
             cp -r gh-pages/allure-report/history/. test-automation/allure-results/history/
             echo "History restored"
           else
@@ -107,19 +107,12 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report  # do NOT use --clean
-
-      - name: Merge history into Allure report
-        run: |
-          mkdir -p gh-pages/allure-report
-          cp -r test-automation/allure-report/. gh-pages/allure-report/
-          echo "History preserved"
+          allure generate allure-results -o allure-report  # DO NOT use --clean
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
         with:
-          path: gh-pages/allure-report
-
+          path: test-automation/allure-report
 
   deploy-allure:
     needs: autotest
