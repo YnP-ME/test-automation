@@ -89,7 +89,7 @@ jobs:
       - name: Restore previous Allure history
         run: |
           mkdir -p test-automation/allure-results/history
-          git clone https://github.com/YnP-ME/test-automation.git gh-pages
+          git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages
           if [ -d gh-pages/allure-report/history ]; then
             cp -r gh-pages/allure-report/history/. test-automation/allure-results/history/
             echo "History restored"
@@ -107,13 +107,13 @@ jobs:
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report  # <-- removed --clean
+          allure generate allure-results -o allure-report  # do NOT use --clean
 
-      - name: Preserve history into Pages
+      - name: Merge history into Allure report
         run: |
-          rm -rf gh-pages/allure-report
           mkdir -p gh-pages/allure-report
           cp -r test-automation/allure-report/. gh-pages/allure-report/
+          echo "History preserved"
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
