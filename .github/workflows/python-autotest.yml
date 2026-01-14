@@ -106,14 +106,6 @@ jobs:
           fi
 
 #          new #add if to check is empty or not
-      - name: Validate Allure history
-        run: |
-         if [ -z "$(ls -A test-automation/allure-results/history 2>/dev/null)" ]; then
-           echo "History folder is empty — starting fresh"
-           rm -rf test-automation/allure-results/history
-         else
-           echo "History restored successfully"
-         fi
 
       - name: Run pytest
         run: |
