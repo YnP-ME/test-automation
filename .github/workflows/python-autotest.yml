@@ -88,7 +88,7 @@ jobs:
 
       # ----------------- Allure history logic -----------------
 
-#      new
+#      new one
       - name: Prepare gh-pages folder
         run: |
           if [ ! -d gh-pages ]; then
