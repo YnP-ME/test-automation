@@ -92,7 +92,7 @@ jobs:
       - name: Prepare gh-pages folder
         run: |
           if [ ! -d gh-pages ]; then
-            git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
+            git clone --depth 1 --branch gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
           fi
 
       - name: Restore previous Allure history
