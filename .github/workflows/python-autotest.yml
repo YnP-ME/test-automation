@@ -88,29 +88,24 @@ jobs:
 
       # ----------------- Allure history logic -----------------
 
-
-#      new
+#      new one
       - name: Prepare gh-pages folder
         run: |
           if [ ! -d gh-pages ]; then
             git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
           fi
 
-
       - name: Restore previous Allure history
         run: |
           mkdir -p test-automation/allure-results/history
           if curl --output /dev/null --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
             cp -r gh-pages/allure-report/history/. test-automation/allure-results/history/
-
-#add if to check is empty or not
-
             echo "History restored"
           else
             echo "No previous history found"
           fi
 
-          #new
+#          new #add if to check is empty or not
       - name: Validate Allure history
         run: |
          if [ -z "$(ls -A test-automation/allure-results/history 2>/dev/null)" ]; then
@@ -119,7 +114,6 @@ jobs:
          else
            echo "History restored successfully"
          fi
-
 
       - name: Run pytest
         run: |
