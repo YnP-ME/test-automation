@@ -35,6 +35,8 @@ jobs:
   autotest:
     name: Run Python UI Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     env:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -86,16 +88,37 @@ jobs:
 
       # ----------------- Allure history logic -----------------
 
+
+#      new
+      - name: Prepare gh-pages folder
+        run: |
+          if [ ! -d gh-pages ]; then
+            git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
+          fi
+
+
       - name: Restore previous Allure history
         run: |
           mkdir -p test-automation/allure-results/history
-          if curl --output /dev/null --silent --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
-            git clone --depth 1 --branch gh-pages https://github.com/YnP-ME/test-automation.git gh-pages
+          if curl --output /dev/null --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
             cp -r gh-pages/allure-report/history/. test-automation/allure-results/history/
+
+#add if to check is empty or not
+
             echo "History restored"
           else
             echo "No previous history found"
           fi
+
+          #new
+      - name: Validate Allure history
+        run: |
+         if [ -z "$(ls -A test-automation/allure-results/history 2>/dev/null)" ]; then
+           echo "History folder is empty — starting fresh"
+           rm -rf test-automation/allure-results/history
+         else
+           echo "History restored successfully"
+         fi
 
 
       - name: Run pytest
@@ -115,12 +138,24 @@ jobs:
           mkdir -p gh-pages/allure-report
           cp -r test-automation/allure-report/. gh-pages/allure-report/
           echo "History preserved"
-     
+
+#     cd gh-pages/allure-report/ and check add git status
+#      new
+      - name: Commit updated Allure history
+        run: |
+          cd gh-pages
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add allure-report
+          git commit -m "Update Allure history for ${{ github.run_number }}" || echo "No changes to commit"
+          git push origin gh-pages
 
       - name: Upload report to GitHub Pages
         uses: actions/upload-pages-artifact@v4
         with:
           path: gh-pages/allure-report
+
+#          add git commit and push to gh-pages branch
 
   deploy-allure:
     needs: autotest
