@@ -95,16 +95,6 @@ jobs:
             git clone --depth 1 --branch gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
           fi
 
-      - name: Restore previous Allure history
-        run: |
-          mkdir -p test-automation/allure-results/history
-          if curl --output /dev/null --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
-            cp -r gh-pages/allure-report/history/. test-automation/allure-results/history/
-            echo "History restored"
-          else
-            echo "No previous history found"
-          fi
-
 #          new #add if to check is empty or not
 
       - name: Run pytest
@@ -126,21 +116,30 @@ jobs:
             "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/",
             "buildOrder": "${{ github.run_number }}"
           }
-          EOF
-
-     
-     
 
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results -o allure-report 
+          allure generate allure-results
+
+
+      - name: Restore previous Allure history
+        run: |
+          mkdir -p test-automation/allure-results/history
+          if curl --output /dev/null --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
+            cp -r gh-pages/allure-report/ test-automation/allure-results/history/
+            echo "History restored"
+          else
+            echo "No previous history found"
+          fi
+          
 
       - name: Preserve history for next runs
         run: |
           mkdir -p gh-pages/allure-report
-          cp -r test-automation/allure-report/. gh-pages/allure-report/
-          echo "History preserved"
+          cp -r test-automation/allure-results gh-pages/allure-report
+          echo "History preserved"    
+          
 
 #     cd gh-pages/allure-report/ and check add git status
 #      new
