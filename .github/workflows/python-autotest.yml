@@ -123,18 +123,15 @@ jobs:
           mkdir -p test-automation/allure-results/history
           if [ -d gh-pages/allure-report/history ]; then
             cp -r gh-pages/allure-report/history/* test-automation/allure-results/history
-#          if curl --output /dev/null --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
-#            cp -r gh-pages/allure-report/ test-automation/allure-results/history
             echo "History restored"
           else
             echo "No previous history found"
           fi
 
-
       - name: Generate Allure report
         run: |
           cd test-automation
-          allure generate allure-results
+          allure generate allure-results --clean -o allure-report
 
       - name: Update gh-pages Allure report
         run: |
@@ -142,15 +139,6 @@ jobs:
           mkdir -p gh-pages
           cp -r test-automation/allure-report gh-pages/allure-report      
  
-
-#      - name: Preserve history for next runs
-#        run: |
-#          mkdir -p gh-pages/allure-report
-#          mkdir -p gh-pages/allure-report/history
-#          cp -r test-automation/allure-results gh-pages/allure-report
-#          cp -r test-automation/allure-results/history gh-pages/allure-report/history
-#          echo "History preserved"
-#
 
 #     cd gh-pages/allure-report/ and check add git status
 #      new
