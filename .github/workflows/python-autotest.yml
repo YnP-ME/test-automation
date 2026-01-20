@@ -127,7 +127,7 @@ jobs:
         run: |
           mkdir -p test-automation/allure-results/history
           if curl --output /dev/null --head --fail https://github.com/YnP-ME/test-automation/raw/gh-pages/allure-report/history/history.json; then
-            cp -r gh-pages/allure-report/ test-automation/allure-results/history/
+            cp -r gh-pages/allure-report/ test-automation/allure-results/history
             echo "History restored"
           else
             echo "No previous history found"
@@ -137,7 +137,9 @@ jobs:
       - name: Preserve history for next runs
         run: |
           mkdir -p gh-pages/allure-report
+          mkdir -p gh-pages/allure-report/history
           cp -r test-automation/allure-results gh-pages/allure-report
+          cp -r test-automation/allure-results/history gh-pages/allure-report/history
           echo "History preserved"    
           
 
@@ -149,6 +151,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add allure-report
+          git add allure-report/history
           git commit -m "Update Allure history for ${{ github.run_number }}" || echo "No changes to commit"
           git push origin gh-pages
 
