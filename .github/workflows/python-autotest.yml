@@ -137,11 +137,19 @@ jobs:
           cd test-automation
           allure generate allure-results --clean -o allure-report
 
-      - name: Update gh-pages Allure report
+      - name: Archive Allure report by run number
         run: |
+          mkdir -p gh-pages/run-${GITHUB_RUN_NUMBER}
+          cp -r test-automation/allure-report gh-pages/run-${GITHUB_RUN_NUMBER}/allure-report
           rm -rf gh-pages/allure-report
-          mkdir -p gh-pages
-          cp -r test-automation/allure-report gh-pages/allure-report      
+          cp -r test-automation/allure-report gh-pages/allure-report
+     
+
+#      - name: Update gh-pages Allure report
+#        run: |
+#          rm -rf gh-pages/allure-report
+#          mkdir -p gh-pages
+#          cp -r test-automation/allure-report gh-pages/allure-report
  
 
 #     cd gh-pages/allure-report/ and check add git status
@@ -155,26 +163,8 @@ jobs:
           git commit -m "Update Allure history for ${{ github.run_number }}" || echo "No changes to commit"
           git push origin gh-pages
 
-#      - name: Upload report to GitHub Pages
-#        uses: actions/upload-pages-artifact@v4
-#        with:
-#          path: gh-pages/allure-report
-
-#          add git commit and push to gh-pages branch
-
-#  deploy-allure:
-#    needs: autotest
-#    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-#    runs-on: ubuntu-latest
-#    permissions:
-#      pages: write
-#      id-token: write
-#    environment: github-pages
-#    steps:
-#      - id: deployment
-#        uses: actions/deploy-pages@v4
 
       - name: Add Allure report link to workflow summary
         run: |
           echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
-          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/allure-report/)" >> $GITHUB_STEP_SUMMARY
+          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/)" >> $GITHUB_STEP_SUMMARY
