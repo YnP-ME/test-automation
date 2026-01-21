@@ -163,9 +163,10 @@ jobs:
       - name: Upload Allure report artifact
         uses: actions/upload-pages-artifact@v4
         with:
+          name: allure-report
           path: gh-pages/allure-report
 
-  # ----------------- Deploy Allure Pages -----------------
+    # ----------------- Deploy Allure Pages -----------------
   deploy-allure:
     needs: autotest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
@@ -176,7 +177,7 @@ jobs:
     environment: github-pages
     steps:
       - name: Download Allure report artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: allure-report
           path: gh-pages/allure-report
