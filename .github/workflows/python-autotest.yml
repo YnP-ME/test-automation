@@ -99,7 +99,8 @@ jobs:
       - name: Run pytest (always generate results even if tests fail/skip)
         run: |
           cd test-automation
-          pytest ${{ inputs.tests_path || 'dream_platform/ui/tests' }} --env=${{ inputs.environment || 'production' }} \
+          pytest ${{ inputs.tests_path || 'dream_platform/ui/tests' }} \
+            --env=${{ inputs.environment || 'development' }} \
             --junitxml=pytest-report.xml \
             --alluredir=allure-results || true
 
