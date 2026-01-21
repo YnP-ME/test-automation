@@ -88,16 +88,13 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-      # ----------------- Allure history logic -----------------
+    # ----------------- Allure history logic -----------------
 
-#      new one
       - name: Prepare gh-pages folder
         run: |
           if [ ! -d gh-pages ]; then
             git clone --depth 1 --branch gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
           fi
-
-#          new #add if to check is empty or not
 
       - name: Run pytest
         run: |
@@ -106,6 +103,18 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results
 
+      # Restore only the history folder first
+      - name: Restore previous Allure history
+        run: |
+          if [ -d gh-pages/allure-report/history ]; then
+            mkdir -p test-automation/allure-results
+            cp -r gh-pages/allure-report/history test-automation/allure-results/
+            echo "History restored"
+          else
+            echo "No previous history found"
+          fi
+
+      # Now create a fresh executor.json for THIS run
       - name: Create Allure executor info
         run: |
           mkdir -p test-automation/allure-results
@@ -119,50 +128,30 @@ jobs:
             "buildOrder": "${{ github.run_number }}"
           }
           EOF
-      
-
-      - name: Restore previous Allure history
-        run: |
-          if [ -d gh-pages/allure-report/history ]; then
-            mkdir -p test-automation/allure-results
-            cp -r gh-pages/allure-report/history test-automation/allure-results/
-            echo "History restored"
-          else
-            echo "No previous history found"
-          fi
-    
 
       - name: Generate Allure report
         run: |
           cd test-automation
           allure generate allure-results --clean -o allure-report
 
+      # Archive this run by run number so you can compare old reports
       - name: Archive Allure report by run number
         run: |
           mkdir -p gh-pages/run-${GITHUB_RUN_NUMBER}
           cp -r test-automation/allure-report gh-pages/run-${GITHUB_RUN_NUMBER}/allure-report
+          
+          # Optional: update latest report link
           rm -rf gh-pages/allure-report
           cp -r test-automation/allure-report gh-pages/allure-report
-     
 
-#      - name: Update gh-pages Allure report
-#        run: |
-#          rm -rf gh-pages/allure-report
-#          mkdir -p gh-pages
-#          cp -r test-automation/allure-report gh-pages/allure-report
- 
-
-#     cd gh-pages/allure-report/ and check add git status
-#      new
       - name: Commit updated Allure history
         run: |
           cd gh-pages
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add allure-report
-          git commit -m "Update Allure history for ${{ github.run_number }}" || echo "No changes to commit"
+          git add .
+          git commit -m "Add Allure report for Run #${GITHUB_RUN_NUMBER}" || echo "No changes to commit"
           git push origin gh-pages
-
 
       - name: Add Allure report link to workflow summary
         run: |
