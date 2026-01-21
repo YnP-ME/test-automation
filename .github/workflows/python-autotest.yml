@@ -89,14 +89,13 @@ jobs:
             --tenant "$AZURE_TENANT_ID"
 
       # ----------------- Allure history & report logic -----------------
-
       - name: Prepare gh-pages folder
         run: |
           if [ ! -d gh-pages ]; then
             git clone --depth 1 --branch gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
           fi
 
-      - name: Run pytest (do not stop on failure)
+      - name: Run pytest
         run: |
           cd test-automation
           pytest ${{ inputs.tests_path || 'dream_platform/ui/tests' }} \
@@ -104,72 +103,90 @@ jobs:
             --junitxml=pytest-report.xml \
             --alluredir=allure-results || true
 
-      # Restore Allure history ONLY
       - name: Restore previous Allure history
         run: |
           if [ -d gh-pages/allure-report/history ]; then
             mkdir -p test-automation/allure-results/history
             cp -r gh-pages/allure-report/history/* test-automation/allure-results/history/
-            rm -f test-automation/allure-results/history/executor.json
-            echo "History restored"
+            # Remove old executor.json from history if exists
+            if [ -f test-automation/allure-results/history/executor.json ]; then
+              rm test-automation/allure-results/history/executor.json
+            fi
+            echo "History restored without old executor.json"
           else
             echo "No previous history found"
           fi
 
-      # Create executor.json for THIS run
       - name: Create Allure executor info
         run: |
+          mkdir -p test-automation/allure-results
           cat > test-automation/allure-results/executor.json <<EOF
           {
             "name": "GitHub Actions",
             "type": "github",
             "buildName": "Run #${{ github.run_number }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/",
             "buildOrder": "${{ github.run_number }}"
           }
           EOF
 
-      # Add environment info (Overview → Environment)
       - name: Add environment info to Allure
         run: |
+          mkdir -p test-automation/allure-results
           echo "Environment=${{ inputs.environment || 'development' }}" > test-automation/allure-results/environment.properties
 
-      # Generate Allure report (always)
       - name: Generate Allure report
         run: |
           cd test-automation
           allure generate allure-results --clean -o allure-report
 
-      # Publish to GitHub Pages ROOT (this fixes 404 + old runs)
-      - name: Publish Allure report
-        run: |
-          rm -rf gh-pages/*
-          cp -r test-automation/allure-report/* gh-pages/
-
-      # Archive this run (optional, but you already use it)
       - name: Archive Allure report by run number
         run: |
           mkdir -p gh-pages/run-${GITHUB_RUN_NUMBER}
           cp -r test-automation/allure-report gh-pages/run-${GITHUB_RUN_NUMBER}/allure-report
 
-      # Commit & push
-      - name: Commit updated Allure report
+          # Keep a "latest" report for fixed link
+          rm -rf gh-pages/allure-report
+          cp -r test-automation/allure-report gh-pages/allure-report
+
+      - name: Commit updated Allure history
         run: |
           cd gh-pages
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
-          git commit -m "Add Allure report for Run #${GITHUB_RUN_NUMBER}" || echo "No changes"
+          git commit -m "Add Allure report for Run #${GITHUB_RUN_NUMBER}" || echo "No changes to commit"
           git push origin gh-pages
 
-      # Link in workflow summary
-      - name: Add Allure report link
+      - name: Add Allure report link to workflow summary
         run: |
           echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
-          echo "[Open Allure report](https://ynp-me.github.io/test-automation/)" >> $GITHUB_STEP_SUMMARY
+          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/#)" >> $GITHUB_STEP_SUMMARY
 
-      # Fail job if tests failed (AFTER report is published)
-      - name: Fail workflow if tests failed
+      - name: Fail workflow if any test failed
         run: |
           cd test-automation
-          grep -q 'failures="0"' pytest-report.xml
+          pytest --last-failed || exit 1
+
+  deploy-allure:
+    needs: autotest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment: github-pages
+    steps:
+      - name: Upload Allure report as Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: gh-pages/allure-report
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add Allure report link to workflow summary
+        run: |
+          echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
+          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/#)" >> $GITHUB_STEP_SUMMARY
