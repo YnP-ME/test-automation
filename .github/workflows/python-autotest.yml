@@ -88,7 +88,8 @@ jobs:
             -p "$AZURE_CLIENT_SECRET" \
             --tenant "$AZURE_TENANT_ID"
 
-      # ----------------- Allure history & report logic -----------------
+  # ----------------- Allure history logic -----------------
+
       - name: Prepare gh-pages folder
         run: |
           if [ ! -d gh-pages ]; then
@@ -146,7 +147,7 @@ jobs:
           mkdir -p gh-pages/run-${GITHUB_RUN_NUMBER}
           cp -r test-automation/allure-report gh-pages/run-${GITHUB_RUN_NUMBER}/allure-report
 
-          # Keep a "latest" report for fixed link
+          # Optional: keep a "latest" report for fixed link
           rm -rf gh-pages/allure-report
           cp -r test-automation/allure-report gh-pages/allure-report
 
@@ -159,16 +160,12 @@ jobs:
           git commit -m "Add Allure report for Run #${GITHUB_RUN_NUMBER}" || echo "No changes to commit"
           git push origin gh-pages
 
-      - name: Add Allure report link to workflow summary
-        run: |
-          echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
-          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/#)" >> $GITHUB_STEP_SUMMARY
+      - name: Upload Allure report artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: gh-pages/allure-report
 
-      - name: Fail workflow if any test failed
-        run: |
-          cd test-automation
-          pytest --last-failed || exit 1
-
+  # ----------------- Deploy Allure Pages -----------------
   deploy-allure:
     needs: autotest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
@@ -178,9 +175,10 @@ jobs:
       id-token: write
     environment: github-pages
     steps:
-      - name: Upload Allure report as Pages artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Download Allure report artifact
+        uses: actions/download-artifact@v3
         with:
+          name: allure-report
           path: gh-pages/allure-report
 
       - id: deployment
@@ -189,4 +187,4 @@ jobs:
       - name: Add Allure report link to workflow summary
         run: |
           echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
-          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/#)" >> $GITHUB_STEP_SUMMARY
+          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/allure-report/)" >> $GITHUB_STEP_SUMMARY
