@@ -162,17 +162,17 @@ jobs:
 
 #          add git commit and push to gh-pages branch
 
-  deploy-allure:
-    needs: autotest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment: github-pages
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+#  deploy-allure:
+#    needs: autotest
+#    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+#    runs-on: ubuntu-latest
+#    permissions:
+#      pages: write
+#      id-token: write
+#    environment: github-pages
+#    steps:
+#      - id: deployment
+#        uses: actions/deploy-pages@v4
 
       - name: Add Allure report link to workflow summary
         run: |
