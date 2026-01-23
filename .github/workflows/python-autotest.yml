@@ -176,12 +176,6 @@ jobs:
       id-token: write
     environment: github-pages
     steps:
-      - name: Download Allure report artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report
-          path: gh-pages/allure-report
-
       - id: deployment
         uses: actions/deploy-pages@v4
 
