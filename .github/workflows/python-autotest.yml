@@ -182,4 +182,4 @@ jobs:
       - name: Add Allure report link to workflow summary
         run: |
           echo "### Allure Report" >> $GITHUB_STEP_SUMMARY
-          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/allure-report/)" >> $GITHUB_STEP_SUMMARY
+          echo "[Click here to view Allure report](https://ynp-me.github.io/test-automation/)" >> $GITHUB_STEP_SUMMARY
