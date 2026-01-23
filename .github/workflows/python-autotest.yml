@@ -163,7 +163,7 @@ jobs:
       - name: Upload Allure report artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          name: allure-report
+          name: github-pages
           path: gh-pages/allure-report
 
     # ----------------- Deploy Allure Pages -----------------
