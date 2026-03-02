@@ -83,7 +83,7 @@ def browser_page(request):
 
 # ---------- Login fixtures ----------
 @pytest.fixture
-def login_as_user(browser_page, base_url, config):
+def login_as_user(browser_page, base_url):
     login = LoginPage(browser_page, base_url)
     login.open_login()
     login.enter_username(EMPLOYEE_USERNAME)
@@ -92,7 +92,7 @@ def login_as_user(browser_page, base_url, config):
     expect(login.exit_button).to_be_visible()
 
 @pytest.fixture
-def login_as_admin(browser_page, base_url, config):
+def login_as_admin(browser_page, base_url):
     login = LoginPage(browser_page, base_url)
     login.open_login()
     login.enter_username(EMPLOYEE_USERNAME)
