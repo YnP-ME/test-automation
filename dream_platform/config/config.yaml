@@ -1,7 +1,7 @@
 default: production
 environments:
   local: ""
-  staging: "https://dp-dev.q1-team.com/login"
+  development: "https://dp-dev.q1-team.com/login"
   production: "https://dp.q1-team.com/login"
 users:
   admin:
