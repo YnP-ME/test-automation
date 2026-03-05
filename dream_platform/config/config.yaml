@@ -1,8 +1,8 @@
 default: production
 environments:
   local: ""
-  staging: ""
-  production: "https://dp-dev.q1-team.com/login"
+  staging: "https://dp-dev.q1-team.com/login"
+  production: "https://dp.q1-team.com/login"
 users:
   admin:
     username: "test_admin@quantumone.ae"
