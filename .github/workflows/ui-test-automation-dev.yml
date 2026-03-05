@@ -23,10 +23,10 @@ on:
         options: [ development ]
 
   pull_request:
-    branches: [ dev ]
+    branches: [main, dev ]
 
   push:
-    branches: [ dev ]
+    branches: [main,dev ]
 
   schedule:
     - cron: '0 0 * * *'
