@@ -1,4 +1,4 @@
-name: Python AutoTest on Azure
+name: UI Test Automation - PROD
 
 on:
   workflow_call:
