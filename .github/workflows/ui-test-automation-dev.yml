@@ -166,7 +166,7 @@ jobs:
 
   deploy-allure:
     needs: autotest
-    if: github.ref == 'refs/heads/dev'
+    if: always()
     runs-on: ubuntu-latest
 
     permissions:
