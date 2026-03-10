@@ -37,8 +37,8 @@ class UserPage(BasePage):
             "button:text('Cancel')"
         )
         # Success message after password change
-        self.password_change_success = page.locator(
-            "div._success_content__wrapper_5zecm_1 h3:text('Password was successfully changed')"
+        self.password_change_success = page.get_by_text(
+            "Password was successfully changed", exact=True
         )
 
     # ---------- Actions ----------
