@@ -42,6 +42,10 @@ def test_admin_valid_login(browser_page, base_url, config):
     expect(login.timesheet_panel_button, "Timesheet panel link not visible").to_be_visible()
     expect(login.performance_review_panel_button, "Performance Review panel link not visible").to_be_visible()
     expect(login.admin_profile_link, "Admin profile link not visible").to_be_visible()
+    expect(login.staffing_platform_button, "Staffing Platform button not visible").to_be_visible()
+    expect(login.dochub_button, "Doc Hub button not visible").to_be_visible()
+    expect(login.people_button, "People button not visible").to_be_visible()
+
 
 @pytest.mark.order(3)
 def test_logout(browser_page, base_url):
