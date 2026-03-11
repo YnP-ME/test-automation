@@ -56,6 +56,8 @@ jobs:
         with:
           repository: YnP-ME/test-automation
           path: test-automation
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
