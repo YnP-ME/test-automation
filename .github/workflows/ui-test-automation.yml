@@ -57,8 +57,6 @@ jobs:
       - name: Checkout TestAutomation repo
         uses: actions/checkout@v4
         with:
-          repository: YnP-ME/test-automation
-          ref: ${{ github.ref }}
           path: test-automation
 
       - name: Setup Pages
