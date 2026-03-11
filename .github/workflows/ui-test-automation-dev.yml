@@ -57,12 +57,12 @@ jobs:
           repository: YnP-ME/test-automation
           path: test-automation
 
-      - name: Commit updated Allure history
-      - uses: actions/checkout@v4
+      - name: Commit test
+        uses: actions/checkout@v4
         with:
           persist-credentials: true
           fetch-depth: 0
-      - run: |
+        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git commit -m "test" --allow-empty || echo "No changes to commit"
