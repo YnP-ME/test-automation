@@ -194,7 +194,7 @@ jobs:
           cp -r test-automation/allure-report gh-pages/allure-report
 
       - name: Commit updated Allure history
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
         with:
           persist-credentials: true
           fetch-depth: 0
