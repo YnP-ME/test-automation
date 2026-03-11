@@ -12,6 +12,9 @@ on:
       environment:
         required: true
         type: string
+    secrets:
+      gh_token:
+        required: false
 
   workflow_dispatch:
     inputs:
@@ -56,7 +59,7 @@ jobs:
         with:
           repository: YnP-ME/test-automation
           path: test-automation
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.gh_token || secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
       - name: Set up Python
@@ -92,11 +95,12 @@ jobs:
 
       # ----------------- Allure history logic -----------------
 
-      - name: Prepare gh-pages folder
-        run: |
-          if [ ! -d gh-pages ]; then
-            git clone --depth 1 --branch gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/YnP-ME/test-automation.git gh-pages || mkdir gh-pages
-          fi
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          token: ${{ secrets.gh_token || secrets.GITHUB_TOKEN }}
 
       - name: Run pytest
         run: |
