@@ -122,6 +122,8 @@ jobs:
           pytest ${{ inputs.tests_path || 'dream_platform/ui/tests' }} \
             --env=${{ inputs.environment || 'development' }} \
             --junitxml=pytest-report.xml \
+            --json-report \
+            --json-report-file=test-results.json \
             --alluredir=allure-results || true
 
       - name: Create Allure executor info
@@ -171,26 +173,19 @@ jobs:
         if: always()
         run: |
           cd test-automation
-          if [ -f pytest-report.xml ]; then
-            TOTAL=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('pytest-report.xml'); print(tree.getroot().attrib.get('tests', '0'))")
-            FAILURES=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('pytest-report.xml'); print(tree.getroot().attrib.get('failures', '0'))")
-            ERRORS=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('pytest-report.xml'); print(tree.getroot().attrib.get('errors', '0'))")
-            PASSED=$((TOTAL - FAILURES - ERRORS))
-            FAILED=$((FAILURES + ERRORS))
+          if [ -f test-results.json ]; then
+            jq '{
+              total_tests: .summary.total,
+              passed_tests: .summary.passed,
+              failed_tests: (.summary.failed + .summary.error),
+              allure_url: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+            }' test-results.json > test-results.tmp.json
+            mv test-results.tmp.json test-results.json
+            echo "Test results summary:"
+            cat test-results.json
           else
-            TOTAL=0
-            PASSED=0
-            FAILED=0
+            echo "test-results.json not found!"
           fi
-
-          cat > test-results.json <<EOF
-          {
-            "total_tests": $TOTAL,
-            "passed_tests": $PASSED,
-            "failed_tests": $FAILED,
-            "allure_url": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-          }
-          EOF
 
       - name: Upload test results as artifact
         if: always()
