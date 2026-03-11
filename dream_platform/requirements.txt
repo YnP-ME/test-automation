@@ -12,3 +12,4 @@ PyYAML==6.0.1
 pytest-order==1.1.0
 python-dotenv
 allure-pytest
+pytest-json-report
