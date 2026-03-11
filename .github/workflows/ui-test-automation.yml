@@ -1,4 +1,4 @@
-name: UI Test Automation - DEV
+name: UI Test Automation
 
 on:
   workflow_call:
@@ -22,6 +22,7 @@ on:
         type: choice
         options:
           - development
+          - production
 
   pull_request:
     branches: [main, dev]
@@ -34,7 +35,7 @@ on:
 
 jobs:
   autotest:
-    name: Run Python UI Tests (DEV)
+    name: Run Python UI Tests
     runs-on: ubuntu-latest
 
     permissions:
@@ -128,7 +129,7 @@ jobs:
           mkdir -p test-automation/allure-results
           cat > test-automation/allure-results/executor.json <<EOF
           {
-            "name": "GitHub Actions DEV",
+            "name": "GitHub Actions",
             "type": "github",
             "buildName": "Run #${{ github.run_number }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
@@ -220,5 +221,5 @@ jobs:
 
       - name: Add Allure report link to workflow summary
         run: |
-          echo "### Allure Report (DEV)" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Allure Report" >> "$GITHUB_STEP_SUMMARY"
           echo "[Click here to view Allure report](${{ steps.deployment.outputs.page_url }})" >> "$GITHUB_STEP_SUMMARY"
