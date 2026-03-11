@@ -141,6 +141,39 @@ jobs:
           cd test-automation
           allure generate allure-results --clean -o allure-report
 
+      - name: Parse test results and create artifact
+        if: always()
+        run: |
+          cd test-automation
+          if [ -f pytest-report.xml ]; then
+            TOTAL=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('pytest-report.xml'); print(tree.getroot().attrib.get('tests', '0'))")
+            FAILURES=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('pytest-report.xml'); print(tree.getroot().attrib.get('failures', '0'))")
+            ERRORS=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('pytest-report.xml'); print(tree.getroot().attrib.get('errors', '0'))")
+            PASSED=$((TOTAL - FAILURES - ERRORS))
+            FAILED=$((FAILURES + ERRORS))
+          else
+            TOTAL=0
+            PASSED=0
+            FAILED=0
+          fi
+
+          cat > test-results.json <<EOF
+          {
+            "total_tests": $TOTAL,
+            "passed_tests": $PASSED,
+            "failed_tests": $FAILED,
+            "allure_url": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/"
+          }
+          EOF
+
+      - name: Upload test results as artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-automation/test-results.json
+          retention-days: 7
+
       - name: Archive Allure report by run number
         run: |
           mkdir -p gh-pages/run-${GITHUB_RUN_NUMBER}
