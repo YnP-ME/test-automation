@@ -58,6 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: YnP-ME/test-automation
+          ref: ${{ github.ref }}
           path: test-automation
 
       - name: Setup Pages
@@ -185,6 +186,7 @@ jobs:
             cat test-results.json
           else
             echo "test-results.json not found!"
+            exit 1
           fi
 
       - name: Upload test results as artifact
