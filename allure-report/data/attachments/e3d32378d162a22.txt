@@ -1,2 +1,0 @@
-
-Running tests against: production → https://dp.q1-team.com/
